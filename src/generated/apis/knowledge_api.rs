@@ -122,10 +122,10 @@ pub enum UploadContentError {
 }
 
 /// Permanently remove all content from the knowledge base. This is a destructive operation that cannot be undone. Use with extreme caution.
-pub async fn delete_all_content(
+pub fn delete_all_content_request_builder(
     configuration: &configuration::Configuration,
     db_id: Option<&str>,
-) -> Result<serde_json::Value, Error<DeleteAllContentError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_query_db_id = db_id;
 
@@ -144,6 +144,15 @@ pub async fn delete_all_content(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn delete_all_content(
+    configuration: &configuration::Configuration,
+    db_id: Option<&str>,
+) -> Result<serde_json::Value, Error<DeleteAllContentError>> {
+    let req_builder = delete_all_content_request_builder(configuration, db_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -182,11 +191,11 @@ pub async fn delete_all_content(
 }
 
 /// Permanently remove a specific content item from the knowledge base. This action cannot be undone.
-pub async fn delete_content_by_id(
+pub fn delete_content_by_id_request_builder(
     configuration: &configuration::Configuration,
     content_id: &str,
     db_id: Option<&str>,
-) -> Result<models::ContentResponseSchema, Error<DeleteContentByIdError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_content_id = content_id;
     let p_query_db_id = db_id;
@@ -210,6 +219,16 @@ pub async fn delete_content_by_id(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn delete_content_by_id(
+    configuration: &configuration::Configuration,
+    content_id: &str,
+    db_id: Option<&str>,
+) -> Result<models::ContentResponseSchema, Error<DeleteContentByIdError>> {
+    let req_builder = delete_content_by_id_request_builder(configuration, content_id, db_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -248,14 +267,14 @@ pub async fn delete_content_by_id(
 }
 
 /// Retrieve paginated list of all content in the knowledge base with filtering and sorting options. Filter by status, content type, or metadata properties.
-pub async fn get_content(
+pub fn get_content_request_builder(
     configuration: &configuration::Configuration,
     limit: Option<i32>,
     page: Option<i32>,
     sort_by: Option<&str>,
     sort_order: Option<models::SortOrder>,
     db_id: Option<&str>,
-) -> Result<models::PaginatedResponseContentResponseSchema, Error<GetContentError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_query_limit = limit;
     let p_query_page = page;
@@ -288,6 +307,20 @@ pub async fn get_content(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_content(
+    configuration: &configuration::Configuration,
+    limit: Option<i32>,
+    page: Option<i32>,
+    sort_by: Option<&str>,
+    sort_order: Option<models::SortOrder>,
+    db_id: Option<&str>,
+) -> Result<models::PaginatedResponseContentResponseSchema, Error<GetContentError>> {
+    let req_builder =
+        get_content_request_builder(configuration, limit, page, sort_by, sort_order, db_id)
+            .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -326,11 +359,11 @@ pub async fn get_content(
 }
 
 /// Retrieve detailed information about a specific content item including processing status and metadata.
-pub async fn get_content_by_id(
+pub fn get_content_by_id_request_builder(
     configuration: &configuration::Configuration,
     content_id: &str,
     db_id: Option<&str>,
-) -> Result<models::ContentResponseSchema, Error<GetContentByIdError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_content_id = content_id;
     let p_query_db_id = db_id;
@@ -352,6 +385,16 @@ pub async fn get_content_by_id(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_content_by_id(
+    configuration: &configuration::Configuration,
+    content_id: &str,
+    db_id: Option<&str>,
+) -> Result<models::ContentResponseSchema, Error<GetContentByIdError>> {
+    let req_builder = get_content_by_id_request_builder(configuration, content_id, db_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -390,11 +433,11 @@ pub async fn get_content_by_id(
 }
 
 /// Retrieve the current processing status of a content item. Useful for monitoring asynchronous content processing progress and identifying any processing errors.
-pub async fn get_content_status(
+pub fn get_content_status_request_builder(
     configuration: &configuration::Configuration,
     content_id: &str,
     db_id: Option<&str>,
-) -> Result<models::ContentStatusResponse, Error<GetContentStatusError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_content_id = content_id;
     let p_query_db_id = db_id;
@@ -416,6 +459,16 @@ pub async fn get_content_status(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_content_status(
+    configuration: &configuration::Configuration,
+    content_id: &str,
+    db_id: Option<&str>,
+) -> Result<models::ContentStatusResponse, Error<GetContentStatusError>> {
+    let req_builder = get_content_status_request_builder(configuration, content_id, db_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -454,10 +507,10 @@ pub async fn get_content_status(
 }
 
 /// Retrieve available readers, chunkers, and configuration options for content processing. This endpoint provides metadata about supported file types, processing strategies, and filters.
-pub async fn get_knowledge_config(
+pub fn get_knowledge_config_request_builder(
     configuration: &configuration::Configuration,
     db_id: Option<&str>,
-) -> Result<models::ConfigResponseSchema, Error<GetKnowledgeConfigError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_query_db_id = db_id;
 
@@ -474,6 +527,15 @@ pub async fn get_knowledge_config(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_knowledge_config(
+    configuration: &configuration::Configuration,
+    db_id: Option<&str>,
+) -> Result<models::ConfigResponseSchema, Error<GetKnowledgeConfigError>> {
+    let req_builder = get_knowledge_config_request_builder(configuration, db_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -512,10 +574,10 @@ pub async fn get_knowledge_config(
 }
 
 /// Search the knowledge base for relevant documents using query, filters and search type.
-pub async fn search_knowledge(
+pub fn search_knowledge_request_builder(
     configuration: &configuration::Configuration,
     vector_search_request_schema: models::VectorSearchRequestSchema,
-) -> Result<models::PaginatedResponseVectorSearchResult, Error<SearchKnowledgeError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_body_vector_search_request_schema = vector_search_request_schema;
 
@@ -532,6 +594,15 @@ pub async fn search_knowledge(
     };
     req_builder = req_builder.json(&p_body_vector_search_request_schema);
 
+    Ok(req_builder)
+}
+
+pub async fn search_knowledge(
+    configuration: &configuration::Configuration,
+    vector_search_request_schema: models::VectorSearchRequestSchema,
+) -> Result<models::PaginatedResponseVectorSearchResult, Error<SearchKnowledgeError>> {
+    let req_builder = search_knowledge_request_builder(configuration, vector_search_request_schema)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -570,7 +641,7 @@ pub async fn search_knowledge(
 }
 
 /// Update content properties such as name, description, metadata, or processing configuration. Allows modification of existing content without re-uploading.
-pub async fn update_content(
+pub fn update_content_request_builder(
     configuration: &configuration::Configuration,
     content_id: &str,
     db_id: Option<&str>,
@@ -578,7 +649,7 @@ pub async fn update_content(
     description: Option<&str>,
     metadata: Option<&str>,
     reader_id: Option<&str>,
-) -> Result<models::ContentResponseSchema, Error<UpdateContentError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_content_id = content_id;
     let p_query_db_id = db_id;
@@ -620,6 +691,28 @@ pub async fn update_content(
     }
     req_builder = req_builder.form(&multipart_form_params);
 
+    Ok(req_builder)
+}
+
+pub async fn update_content(
+    configuration: &configuration::Configuration,
+    content_id: &str,
+    db_id: Option<&str>,
+    name: Option<&str>,
+    description: Option<&str>,
+    metadata: Option<&str>,
+    reader_id: Option<&str>,
+) -> Result<models::ContentResponseSchema, Error<UpdateContentError>> {
+    let req_builder = update_content_request_builder(
+        configuration,
+        content_id,
+        db_id,
+        name,
+        description,
+        metadata,
+        reader_id,
+    )
+    .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -658,7 +751,7 @@ pub async fn update_content(
 }
 
 /// Upload content to the knowledge base. Supports file uploads, text content, or URLs. Content is processed asynchronously in the background. Supports custom readers and chunking strategies.
-pub async fn upload_content(
+pub fn upload_content_request_builder(
     configuration: &configuration::Configuration,
     db_id: Option<&str>,
     name: Option<&str>,
@@ -669,7 +762,7 @@ pub async fn upload_content(
     text_content: Option<&str>,
     reader_id: Option<&str>,
     chunker: Option<&str>,
-) -> Result<models::ContentResponseSchema, Error<UploadContentError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_query_db_id = db_id;
     let p_form_name = name;
@@ -720,6 +813,34 @@ pub async fn upload_content(
     }
     req_builder = req_builder.multipart(multipart_form);
 
+    Ok(req_builder)
+}
+
+pub async fn upload_content(
+    configuration: &configuration::Configuration,
+    db_id: Option<&str>,
+    name: Option<&str>,
+    description: Option<&str>,
+    url: Option<&str>,
+    metadata: Option<&str>,
+    file: Option<std::path::PathBuf>,
+    text_content: Option<&str>,
+    reader_id: Option<&str>,
+    chunker: Option<&str>,
+) -> Result<models::ContentResponseSchema, Error<UploadContentError>> {
+    let req_builder = upload_content_request_builder(
+        configuration,
+        db_id,
+        name,
+        description,
+        url,
+        metadata,
+        file,
+        text_content,
+        reader_id,
+        chunker,
+    )
+    .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 

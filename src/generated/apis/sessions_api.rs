@@ -122,12 +122,12 @@ pub enum UpdateSessionError {
 }
 
 /// Create a new empty session with optional configuration. Useful for pre-creating sessions with specific session_state, metadata, or other properties before running any agent/team/workflow interactions. The session can later be used by providing its session_id in run requests.
-pub async fn create_session(
+pub fn create_session_request_builder(
     configuration: &configuration::Configuration,
     r#type: Option<models::SessionType>,
     db_id: Option<&str>,
     create_session_request: Option<models::CreateSessionRequest>,
-) -> Result<models::ResponseCreateSession, Error<CreateSessionError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_query_type = r#type;
     let p_query_db_id = db_id;
@@ -152,6 +152,18 @@ pub async fn create_session(
     };
     req_builder = req_builder.json(&p_body_create_session_request);
 
+    Ok(req_builder)
+}
+
+pub async fn create_session(
+    configuration: &configuration::Configuration,
+    r#type: Option<models::SessionType>,
+    db_id: Option<&str>,
+    create_session_request: Option<models::CreateSessionRequest>,
+) -> Result<models::ResponseCreateSession, Error<CreateSessionError>> {
+    let req_builder =
+        create_session_request_builder(configuration, r#type, db_id, create_session_request)
+            .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -190,11 +202,11 @@ pub async fn create_session(
 }
 
 /// Permanently delete a specific session and all its associated runs. This action cannot be undone and will remove all conversation history.
-pub async fn delete_session(
+pub fn delete_session_request_builder(
     configuration: &configuration::Configuration,
     session_id: &str,
     db_id: Option<&str>,
-) -> Result<(), Error<DeleteSessionError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_session_id = session_id;
     let p_query_db_id = db_id;
@@ -218,6 +230,16 @@ pub async fn delete_session(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn delete_session(
+    configuration: &configuration::Configuration,
+    session_id: &str,
+    db_id: Option<&str>,
+) -> Result<(), Error<DeleteSessionError>> {
+    let req_builder = delete_session_request_builder(configuration, session_id, db_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -237,12 +259,12 @@ pub async fn delete_session(
 }
 
 /// Delete multiple sessions by their IDs in a single operation. This action cannot be undone and will permanently remove all specified sessions and their runs.
-pub async fn delete_sessions(
+pub fn delete_sessions_request_builder(
     configuration: &configuration::Configuration,
     delete_session_request: models::DeleteSessionRequest,
     r#type: Option<models::SessionType>,
     db_id: Option<&str>,
-) -> Result<(), Error<DeleteSessionsError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_body_delete_session_request = delete_session_request;
     let p_query_type = r#type;
@@ -267,6 +289,18 @@ pub async fn delete_sessions(
     };
     req_builder = req_builder.json(&p_body_delete_session_request);
 
+    Ok(req_builder)
+}
+
+pub async fn delete_sessions(
+    configuration: &configuration::Configuration,
+    delete_session_request: models::DeleteSessionRequest,
+    r#type: Option<models::SessionType>,
+    db_id: Option<&str>,
+) -> Result<(), Error<DeleteSessionsError>> {
+    let req_builder =
+        delete_sessions_request_builder(configuration, delete_session_request, r#type, db_id)
+            .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -286,13 +320,13 @@ pub async fn delete_sessions(
 }
 
 /// Retrieve detailed information about a specific session including metadata, configuration, and run history. Response schema varies based on session type (agent, team, or workflow).
-pub async fn get_session_by_id(
+pub fn get_session_by_id_request_builder(
     configuration: &configuration::Configuration,
     session_id: &str,
     r#type: Option<models::SessionType>,
     user_id: Option<&str>,
     db_id: Option<&str>,
-) -> Result<models::ResponseGetSessionById, Error<GetSessionByIdError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_session_id = session_id;
     let p_query_type = r#type;
@@ -322,6 +356,19 @@ pub async fn get_session_by_id(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_session_by_id(
+    configuration: &configuration::Configuration,
+    session_id: &str,
+    r#type: Option<models::SessionType>,
+    user_id: Option<&str>,
+    db_id: Option<&str>,
+) -> Result<models::ResponseGetSessionById, Error<GetSessionByIdError>> {
+    let req_builder =
+        get_session_by_id_request_builder(configuration, session_id, r#type, user_id, db_id)
+            .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -360,14 +407,14 @@ pub async fn get_session_by_id(
 }
 
 /// Retrieve a specific run by its ID from a session. Response schema varies based on the run type (agent run, team run, or workflow run).
-pub async fn get_session_run(
+pub fn get_session_run_request_builder(
     configuration: &configuration::Configuration,
     session_id: &str,
     run_id: &str,
     r#type: Option<models::SessionType>,
     user_id: Option<&str>,
     db_id: Option<&str>,
-) -> Result<models::ResponseGetSessionRun, Error<GetSessionRunError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_session_id = session_id;
     let p_path_run_id = run_id;
@@ -399,6 +446,20 @@ pub async fn get_session_run(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_session_run(
+    configuration: &configuration::Configuration,
+    session_id: &str,
+    run_id: &str,
+    r#type: Option<models::SessionType>,
+    user_id: Option<&str>,
+    db_id: Option<&str>,
+) -> Result<models::ResponseGetSessionRun, Error<GetSessionRunError>> {
+    let req_builder =
+        get_session_run_request_builder(configuration, session_id, run_id, r#type, user_id, db_id)
+            .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -437,7 +498,7 @@ pub async fn get_session_run(
 }
 
 /// Retrieve all runs (executions) for a specific session with optional timestamp filtering. Runs represent individual interactions or executions within a session. Response schema varies based on session type.
-pub async fn get_session_runs(
+pub fn get_session_runs_request_builder(
     configuration: &configuration::Configuration,
     session_id: &str,
     r#type: Option<models::SessionType>,
@@ -445,7 +506,7 @@ pub async fn get_session_runs(
     created_after: Option<i32>,
     created_before: Option<i32>,
     db_id: Option<&str>,
-) -> Result<Vec<models::GetSessionRuns200ResponseInner>, Error<GetSessionRunsError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_session_id = session_id;
     let p_query_type = r#type;
@@ -483,6 +544,28 @@ pub async fn get_session_runs(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_session_runs(
+    configuration: &configuration::Configuration,
+    session_id: &str,
+    r#type: Option<models::SessionType>,
+    user_id: Option<&str>,
+    created_after: Option<i32>,
+    created_before: Option<i32>,
+    db_id: Option<&str>,
+) -> Result<Vec<models::GetSessionRuns200ResponseInner>, Error<GetSessionRunsError>> {
+    let req_builder = get_session_runs_request_builder(
+        configuration,
+        session_id,
+        r#type,
+        user_id,
+        created_after,
+        created_before,
+        db_id,
+    )
+    .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -521,7 +604,7 @@ pub async fn get_session_runs(
 }
 
 /// Retrieve paginated list of sessions with filtering and sorting options. Supports filtering by session type (agent, team, workflow), component, user, and name. Sessions represent conversation histories and execution contexts.
-pub async fn get_sessions(
+pub fn get_sessions_request_builder(
     configuration: &configuration::Configuration,
     r#type: Option<models::SessionType>,
     component_id: Option<&str>,
@@ -532,7 +615,7 @@ pub async fn get_sessions(
     sort_by: Option<&str>,
     sort_order: Option<models::SortOrder>,
     db_id: Option<&str>,
-) -> Result<models::PaginatedResponseSessionSchema, Error<GetSessionsError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_query_type = r#type;
     let p_query_component_id = component_id;
@@ -581,6 +664,34 @@ pub async fn get_sessions(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_sessions(
+    configuration: &configuration::Configuration,
+    r#type: Option<models::SessionType>,
+    component_id: Option<&str>,
+    user_id: Option<&str>,
+    session_name: Option<&str>,
+    limit: Option<i32>,
+    page: Option<i32>,
+    sort_by: Option<&str>,
+    sort_order: Option<models::SortOrder>,
+    db_id: Option<&str>,
+) -> Result<models::PaginatedResponseSessionSchema, Error<GetSessionsError>> {
+    let req_builder = get_sessions_request_builder(
+        configuration,
+        r#type,
+        component_id,
+        user_id,
+        session_name,
+        limit,
+        page,
+        sort_by,
+        sort_order,
+        db_id,
+    )
+    .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -619,13 +730,13 @@ pub async fn get_sessions(
 }
 
 /// Update the name of an existing session. Useful for organizing and categorizing sessions with meaningful names for better identification and management.
-pub async fn rename_session(
+pub fn rename_session_request_builder(
     configuration: &configuration::Configuration,
     session_id: &str,
     body_rename_session: models::BodyRenameSession,
     r#type: Option<models::SessionType>,
     db_id: Option<&str>,
-) -> Result<models::ResponseRenameSession, Error<RenameSessionError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_session_id = session_id;
     let p_body_body_rename_session = body_rename_session;
@@ -655,6 +766,24 @@ pub async fn rename_session(
     };
     req_builder = req_builder.json(&p_body_body_rename_session);
 
+    Ok(req_builder)
+}
+
+pub async fn rename_session(
+    configuration: &configuration::Configuration,
+    session_id: &str,
+    body_rename_session: models::BodyRenameSession,
+    r#type: Option<models::SessionType>,
+    db_id: Option<&str>,
+) -> Result<models::ResponseRenameSession, Error<RenameSessionError>> {
+    let req_builder = rename_session_request_builder(
+        configuration,
+        session_id,
+        body_rename_session,
+        r#type,
+        db_id,
+    )
+    .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -693,14 +822,14 @@ pub async fn rename_session(
 }
 
 /// Update session properties such as session_name, session_state, metadata, or summary. Use this endpoint to modify the session name, update state, add metadata, or update the session summary.
-pub async fn update_session(
+pub fn update_session_request_builder(
     configuration: &configuration::Configuration,
     session_id: &str,
     update_session_request: models::UpdateSessionRequest,
     r#type: Option<models::SessionType>,
     user_id: Option<&str>,
     db_id: Option<&str>,
-) -> Result<models::ResponseUpdateSession, Error<UpdateSessionError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_session_id = session_id;
     let p_body_update_session_request = update_session_request;
@@ -734,6 +863,26 @@ pub async fn update_session(
     };
     req_builder = req_builder.json(&p_body_update_session_request);
 
+    Ok(req_builder)
+}
+
+pub async fn update_session(
+    configuration: &configuration::Configuration,
+    session_id: &str,
+    update_session_request: models::UpdateSessionRequest,
+    r#type: Option<models::SessionType>,
+    user_id: Option<&str>,
+    db_id: Option<&str>,
+) -> Result<models::ResponseUpdateSession, Error<UpdateSessionError>> {
+    let req_builder = update_session_request_builder(
+        configuration,
+        session_id,
+        update_session_request,
+        r#type,
+        user_id,
+        db_id,
+    )
+    .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 

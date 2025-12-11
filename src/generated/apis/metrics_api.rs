@@ -38,12 +38,12 @@ pub enum RefreshMetricsError {
 }
 
 /// Retrieve AgentOS metrics and analytics data for a specified date range. If no date range is specified, returns all available metrics.
-pub async fn get_metrics(
+pub fn get_metrics_request_builder(
     configuration: &configuration::Configuration,
     starting_date: Option<String>,
     ending_date: Option<String>,
     db_id: Option<&str>,
-) -> Result<models::MetricsResponse, Error<GetMetricsError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_query_starting_date = starting_date;
     let p_query_ending_date = ending_date;
@@ -68,6 +68,17 @@ pub async fn get_metrics(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_metrics(
+    configuration: &configuration::Configuration,
+    starting_date: Option<String>,
+    ending_date: Option<String>,
+    db_id: Option<&str>,
+) -> Result<models::MetricsResponse, Error<GetMetricsError>> {
+    let req_builder = get_metrics_request_builder(configuration, starting_date, ending_date, db_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -106,10 +117,10 @@ pub async fn get_metrics(
 }
 
 /// Manually trigger recalculation of system metrics from raw data. This operation analyzes system activity logs and regenerates aggregated metrics. Useful for ensuring metrics are up-to-date or after system maintenance.
-pub async fn refresh_metrics(
+pub fn refresh_metrics_request_builder(
     configuration: &configuration::Configuration,
     db_id: Option<&str>,
-) -> Result<Vec<models::DayAggregatedMetrics>, Error<RefreshMetricsError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_query_db_id = db_id;
 
@@ -128,6 +139,15 @@ pub async fn refresh_metrics(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn refresh_metrics(
+    configuration: &configuration::Configuration,
+    db_id: Option<&str>,
+) -> Result<Vec<models::DayAggregatedMetrics>, Error<RefreshMetricsError>> {
+    let req_builder = refresh_metrics_request_builder(configuration, db_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 

@@ -21,9 +21,9 @@ pub enum GetApiInfoError {
 }
 
 /// Get basic information about this AgentOS API instance, including:  - API metadata and version - Available capabilities overview - Links to key endpoints and documentation
-pub async fn get_api_info(
+pub fn get_api_info_request_builder(
     configuration: &configuration::Configuration,
-) -> Result<serde_json::Value, Error<GetApiInfoError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     let uri_str = format!("{}/", configuration.base_path);
     let mut req_builder = configuration.client.request(reqwest::Method::GET, &uri_str);
 
@@ -31,6 +31,14 @@ pub async fn get_api_info(
         req_builder = req_builder.header(reqwest::header::USER_AGENT, user_agent.clone());
     }
 
+    Ok(req_builder)
+}
+
+pub async fn get_api_info(
+    configuration: &configuration::Configuration,
+) -> Result<serde_json::Value, Error<GetApiInfoError>> {
+    let req_builder =
+        get_api_info_request_builder(configuration).map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 

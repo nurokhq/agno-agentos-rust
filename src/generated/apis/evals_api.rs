@@ -74,11 +74,11 @@ pub enum UpdateEvalRunError {
 }
 
 /// Delete multiple evaluation runs by their IDs. This action cannot be undone.
-pub async fn delete_eval_runs(
+pub fn delete_eval_runs_request_builder(
     configuration: &configuration::Configuration,
     delete_eval_runs_request: models::DeleteEvalRunsRequest,
     db_id: Option<&str>,
-) -> Result<(), Error<DeleteEvalRunsError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_body_delete_eval_runs_request = delete_eval_runs_request;
     let p_query_db_id = db_id;
@@ -99,6 +99,17 @@ pub async fn delete_eval_runs(
     };
     req_builder = req_builder.json(&p_body_delete_eval_runs_request);
 
+    Ok(req_builder)
+}
+
+pub async fn delete_eval_runs(
+    configuration: &configuration::Configuration,
+    delete_eval_runs_request: models::DeleteEvalRunsRequest,
+    db_id: Option<&str>,
+) -> Result<(), Error<DeleteEvalRunsError>> {
+    let req_builder =
+        delete_eval_runs_request_builder(configuration, delete_eval_runs_request, db_id)
+            .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -118,11 +129,11 @@ pub async fn delete_eval_runs(
 }
 
 /// Retrieve detailed results and metrics for a specific evaluation run.
-pub async fn get_eval_run(
+pub fn get_eval_run_request_builder(
     configuration: &configuration::Configuration,
     eval_run_id: &str,
     db_id: Option<&str>,
-) -> Result<models::EvalSchema, Error<GetEvalRunError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_eval_run_id = eval_run_id;
     let p_query_db_id = db_id;
@@ -144,6 +155,16 @@ pub async fn get_eval_run(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_eval_run(
+    configuration: &configuration::Configuration,
+    eval_run_id: &str,
+    db_id: Option<&str>,
+) -> Result<models::EvalSchema, Error<GetEvalRunError>> {
+    let req_builder = get_eval_run_request_builder(configuration, eval_run_id, db_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -182,7 +203,7 @@ pub async fn get_eval_run(
 }
 
 /// Retrieve paginated evaluation runs with filtering and sorting options. Filter by agent, team, workflow, model, or evaluation type.
-pub async fn get_eval_runs(
+pub fn get_eval_runs_request_builder(
     configuration: &configuration::Configuration,
     agent_id: Option<&str>,
     team_id: Option<&str>,
@@ -195,7 +216,7 @@ pub async fn get_eval_runs(
     sort_order: Option<models::SortOrder>,
     db_id: Option<&str>,
     eval_types: Option<&str>,
-) -> Result<models::PaginatedResponseEvalSchema, Error<GetEvalRunsError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_query_agent_id = agent_id;
     let p_query_team_id = team_id;
@@ -252,6 +273,38 @@ pub async fn get_eval_runs(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_eval_runs(
+    configuration: &configuration::Configuration,
+    agent_id: Option<&str>,
+    team_id: Option<&str>,
+    workflow_id: Option<&str>,
+    model_id: Option<&str>,
+    r#type: Option<models::EvalFilterType>,
+    limit: Option<i32>,
+    page: Option<i32>,
+    sort_by: Option<&str>,
+    sort_order: Option<models::SortOrder>,
+    db_id: Option<&str>,
+    eval_types: Option<&str>,
+) -> Result<models::PaginatedResponseEvalSchema, Error<GetEvalRunsError>> {
+    let req_builder = get_eval_runs_request_builder(
+        configuration,
+        agent_id,
+        team_id,
+        workflow_id,
+        model_id,
+        r#type,
+        limit,
+        page,
+        sort_by,
+        sort_order,
+        db_id,
+        eval_types,
+    )
+    .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -290,11 +343,11 @@ pub async fn get_eval_runs(
 }
 
 /// Run evaluation tests on agents or teams. Supports accuracy, performance, and reliability evaluations. Requires either agent_id or team_id, but not both.
-pub async fn run_eval(
+pub fn run_eval_request_builder(
     configuration: &configuration::Configuration,
     eval_run_input: models::EvalRunInput,
     db_id: Option<&str>,
-) -> Result<models::EvalSchema, Error<RunEvalError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_body_eval_run_input = eval_run_input;
     let p_query_db_id = db_id;
@@ -315,6 +368,16 @@ pub async fn run_eval(
     };
     req_builder = req_builder.json(&p_body_eval_run_input);
 
+    Ok(req_builder)
+}
+
+pub async fn run_eval(
+    configuration: &configuration::Configuration,
+    eval_run_input: models::EvalRunInput,
+    db_id: Option<&str>,
+) -> Result<models::EvalSchema, Error<RunEvalError>> {
+    let req_builder = run_eval_request_builder(configuration, eval_run_input, db_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -353,12 +416,12 @@ pub async fn run_eval(
 }
 
 /// Update the name or other properties of an existing evaluation run.
-pub async fn update_eval_run(
+pub fn update_eval_run_request_builder(
     configuration: &configuration::Configuration,
     eval_run_id: &str,
     update_eval_run_request: models::UpdateEvalRunRequest,
     db_id: Option<&str>,
-) -> Result<models::EvalSchema, Error<UpdateEvalRunError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_eval_run_id = eval_run_id;
     let p_body_update_eval_run_request = update_eval_run_request;
@@ -384,6 +447,18 @@ pub async fn update_eval_run(
     };
     req_builder = req_builder.json(&p_body_update_eval_run_request);
 
+    Ok(req_builder)
+}
+
+pub async fn update_eval_run(
+    configuration: &configuration::Configuration,
+    eval_run_id: &str,
+    update_eval_run_request: models::UpdateEvalRunRequest,
+    db_id: Option<&str>,
+) -> Result<models::EvalSchema, Error<UpdateEvalRunError>> {
+    let req_builder =
+        update_eval_run_request_builder(configuration, eval_run_id, update_eval_run_request, db_id)
+            .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 

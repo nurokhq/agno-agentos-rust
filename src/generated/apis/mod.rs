@@ -92,6 +92,20 @@ pub fn parse_deep_object(prefix: &str, value: &serde_json::Value) -> Vec<(String
     unimplemented!("Only objects are supported with style=deepObject")
 }
 
+/// Maps errors from request builder functions to operation-specific error types.
+/// This centralizes the error conversion logic and ensures all error variants
+/// are handled consistently.
+pub fn map_request_builder_error<T, U>(e: Error<T>) -> Error<U> {
+    match e {
+        Error::Reqwest(e) => Error::Reqwest(e),
+        Error::Serde(e) => Error::Serde(e),
+        Error::Io(e) => Error::Io(e),
+        Error::ResponseError(_) => {
+            unreachable!("A request builder should not produce a ResponseError")
+        }
+    }
+}
+
 /// Internal use only
 /// A content type supported by this client.
 #[allow(dead_code)]

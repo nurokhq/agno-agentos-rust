@@ -70,11 +70,11 @@ pub enum RunParseWorkflowWorkflowsParsePostError {
 }
 
 /// Cancel a currently executing workflow run, stopping all active steps and cleanup. **Note:** Complex workflows with multiple parallel steps may take time to fully cancel.
-pub async fn cancel_workflow_run(
+pub fn cancel_workflow_run_request_builder(
     configuration: &configuration::Configuration,
     workflow_id: &str,
     run_id: &str,
-) -> Result<serde_json::Value, Error<CancelWorkflowRunError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_workflow_id = workflow_id;
     let p_path_run_id = run_id;
@@ -96,6 +96,16 @@ pub async fn cancel_workflow_run(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn cancel_workflow_run(
+    configuration: &configuration::Configuration,
+    workflow_id: &str,
+    run_id: &str,
+) -> Result<serde_json::Value, Error<CancelWorkflowRunError>> {
+    let req_builder = cancel_workflow_run_request_builder(configuration, workflow_id, run_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -134,14 +144,14 @@ pub async fn cancel_workflow_run(
 }
 
 /// Execute a workflow with the provided input data. Workflows can run in streaming or batch mode.  **Execution Modes:** - **Streaming (`stream=true`)**: Real-time step-by-step execution updates via SSE - **Non-Streaming (`stream=false`)**: Complete workflow execution with final result  **Workflow Execution Process:** 1. Input validation against workflow schema 2. Sequential or parallel step execution based on workflow design 3. Data flow between steps with transformation 4. Error handling and automatic retries where configured 5. Final result compilation and response  **Session Management:** Workflows support session continuity for stateful execution across multiple runs.
-pub async fn create_workflow_run(
+pub fn create_workflow_run_request_builder(
     configuration: &configuration::Configuration,
     workflow_id: &str,
     message: &str,
     stream: Option<bool>,
     session_id: Option<&str>,
     user_id: Option<&str>,
-) -> Result<serde_json::Value, Error<CreateWorkflowRunError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_workflow_id = workflow_id;
     let p_form_message = message;
@@ -177,6 +187,26 @@ pub async fn create_workflow_run(
     }
     req_builder = req_builder.form(&multipart_form_params);
 
+    Ok(req_builder)
+}
+
+pub async fn create_workflow_run(
+    configuration: &configuration::Configuration,
+    workflow_id: &str,
+    message: &str,
+    stream: Option<bool>,
+    session_id: Option<&str>,
+    user_id: Option<&str>,
+) -> Result<serde_json::Value, Error<CreateWorkflowRunError>> {
+    let req_builder = create_workflow_run_request_builder(
+        configuration,
+        workflow_id,
+        message,
+        stream,
+        session_id,
+        user_id,
+    )
+    .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -215,10 +245,10 @@ pub async fn create_workflow_run(
 }
 
 /// Retrieve detailed configuration and step information for a specific workflow.
-pub async fn get_workflow(
+pub fn get_workflow_request_builder(
     configuration: &configuration::Configuration,
     workflow_id: &str,
-) -> Result<models::WorkflowResponse, Error<GetWorkflowError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_workflow_id = workflow_id;
 
@@ -236,6 +266,15 @@ pub async fn get_workflow(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_workflow(
+    configuration: &configuration::Configuration,
+    workflow_id: &str,
+) -> Result<models::WorkflowResponse, Error<GetWorkflowError>> {
+    let req_builder = get_workflow_request_builder(configuration, workflow_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -274,9 +313,9 @@ pub async fn get_workflow(
 }
 
 /// Retrieve a comprehensive list of all workflows configured in this OS instance.  **Return Information:** - Workflow metadata (ID, name, description) - Input schema requirements - Step sequence and execution flow - Associated agents and teams
-pub async fn get_workflows(
+pub fn get_workflows_request_builder(
     configuration: &configuration::Configuration,
-) -> Result<Vec<models::WorkflowSummaryResponse>, Error<GetWorkflowsError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     let uri_str = format!("{}/workflows", configuration.base_path);
     let mut req_builder = configuration.client.request(reqwest::Method::GET, &uri_str);
 
@@ -287,6 +326,14 @@ pub async fn get_workflows(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_workflows(
+    configuration: &configuration::Configuration,
+) -> Result<Vec<models::WorkflowSummaryResponse>, Error<GetWorkflowsError>> {
+    let req_builder =
+        get_workflows_request_builder(configuration).map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -325,13 +372,10 @@ pub async fn get_workflows(
 }
 
 /// Run the parse workflow  Args:     request: Parse workflow request  Returns:     Parse workflow result
-pub async fn run_parse_workflow_workflows_parse_post(
+pub fn run_parse_workflow_workflows_parse_post_request_builder(
     configuration: &configuration::Configuration,
     parse_workflow_request: models::ParseWorkflowRequest,
-) -> Result<
-    std::collections::HashMap<String, serde_json::Value>,
-    Error<RunParseWorkflowWorkflowsParsePostError>,
-> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_body_parse_workflow_request = parse_workflow_request;
 
@@ -345,6 +389,21 @@ pub async fn run_parse_workflow_workflows_parse_post(
     }
     req_builder = req_builder.json(&p_body_parse_workflow_request);
 
+    Ok(req_builder)
+}
+
+pub async fn run_parse_workflow_workflows_parse_post(
+    configuration: &configuration::Configuration,
+    parse_workflow_request: models::ParseWorkflowRequest,
+) -> Result<
+    std::collections::HashMap<String, serde_json::Value>,
+    Error<RunParseWorkflowWorkflowsParsePostError>,
+> {
+    let req_builder = run_parse_workflow_workflows_parse_post_request_builder(
+        configuration,
+        parse_workflow_request,
+    )
+    .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 

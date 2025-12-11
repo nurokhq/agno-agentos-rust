@@ -38,9 +38,9 @@ pub enum GetModelsError {
 }
 
 /// Retrieve the complete configuration of the AgentOS instance, including:  - Available models and databases - Registered agents, teams, and workflows - Chat, session, memory, knowledge, and evaluation configurations - Available interfaces and their routes
-pub async fn get_config(
+pub fn get_config_request_builder(
     configuration: &configuration::Configuration,
-) -> Result<models::ConfigResponse, Error<GetConfigError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     let uri_str = format!("{}/config", configuration.base_path);
     let mut req_builder = configuration.client.request(reqwest::Method::GET, &uri_str);
 
@@ -51,6 +51,14 @@ pub async fn get_config(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_config(
+    configuration: &configuration::Configuration,
+) -> Result<models::ConfigResponse, Error<GetConfigError>> {
+    let req_builder =
+        get_config_request_builder(configuration).map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -89,9 +97,9 @@ pub async fn get_config(
 }
 
 /// Retrieve a list of all unique models currently used by agents and teams in this OS instance. This includes the model ID and provider information for each model.
-pub async fn get_models(
+pub fn get_models_request_builder(
     configuration: &configuration::Configuration,
-) -> Result<Vec<models::Model>, Error<GetModelsError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     let uri_str = format!("{}/models", configuration.base_path);
     let mut req_builder = configuration.client.request(reqwest::Method::GET, &uri_str);
 
@@ -102,6 +110,14 @@ pub async fn get_models(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_models(
+    configuration: &configuration::Configuration,
+) -> Result<Vec<models::Model>, Error<GetModelsError>> {
+    let req_builder =
+        get_models_request_builder(configuration).map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
