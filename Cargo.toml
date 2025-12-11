@@ -1,5 +1,5 @@
 [package]
-name = "agno-agentos-rust"
+name = "agno-agentos-client"
 version = "0.1.0"
 edition = "2024"
 

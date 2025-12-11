@@ -118,13 +118,21 @@ enum ContentType {
 impl From<&str> for ContentType {
     fn from(content_type: &str) -> Self {
         if content_type.starts_with("application") && content_type.contains("json") {
-            return Self::Json;
+            Self::Json
         } else if content_type.starts_with("text/plain") {
-            return Self::Text;
+            Self::Text
         } else {
-            return Self::Unsupported(content_type.to_string());
+            Self::Unsupported(content_type.to_string())
         }
     }
+}
+
+/// Represents an uploadable file with metadata for multipart forms.
+#[derive(Debug, Clone)]
+pub struct UploadFile {
+    pub name: String,
+    pub content_type: String,
+    pub content: Vec<u8>,
 }
 
 pub mod agents_api;

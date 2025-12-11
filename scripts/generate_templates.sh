@@ -1,8 +1,6 @@
 #!/bin/bash
 
 # Script to extract default Rust templates from OpenAPI Generator
-# and automatically apply custom modifications
-# This will create/update the ./templates directory with all template files
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"

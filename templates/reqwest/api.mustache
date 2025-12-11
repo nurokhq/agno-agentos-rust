@@ -3,13 +3,20 @@
 use reqwest;
 use serde::{Deserialize, Serialize, de::Error as _};
 use crate::{apis::ResponseContent, models};
-use super::{Error, configuration, ContentType};
+use super::{ContentType, Error, UploadFile, configuration};
 {{#operations}}
 {{#operation}}
 {{#vendorExtensions.useAsyncFileStream}}
 use tokio::fs::File as TokioFile;
 use tokio_util::codec::{BytesCodec, FramedRead};
 {{/vendorExtensions.useAsyncFileStream}}
+{{#hasFormParams}}
+{{#formParams}}
+{{#isFile}}
+use reqwest{{^supportAsync}}::blocking{{/supportAsync}}::multipart::Part;
+{{/isFile}}
+{{/formParams}}
+{{/hasFormParams}}
 {{/operation}}
 {{/operations}}
 
@@ -28,12 +35,14 @@ pub struct {{{operationIdCamelCase}}}Params {
     pub {{{paramName}}}: {{!
     ### Option Start
     }}{{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{!
+    ### File types - include metadata for multipart uploads
+    }}{{#isFile}}{{#isArray}}Vec<{{/isArray}}UploadFile{{#isArray}}>{{/isArray}}{{/isFile}}{{!
     ### &str and Vec<&str>
-    }}{{^isUuid}}{{#isString}}{{#isArray}}Vec<{{/isArray}}String{{#isArray}}>{{/isArray}}{{/isString}}{{/isUuid}}{{!
+    }}{{^isFile}}{{^isUuid}}{{#isString}}{{#isArray}}Vec<{{/isArray}}String{{#isArray}}>{{/isArray}}{{/isString}}{{/isUuid}}{{/isFile}}{{!
     ### UUIDs
-    }}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}String{{#isArray}}>{{/isArray}}{{/isUuid}}{{!
+    }}{{^isFile}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}String{{#isArray}}>{{/isArray}}{{/isUuid}}{{/isFile}}{{!
     ### Models and primative types
-    }}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{!
+    }}{{^isFile}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{/isFile}}{{!
     ### Option End
     }}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{!
     ### Comma for next arguement
@@ -110,12 +119,14 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
 pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}}{{/bodyParams}}{{/hasBodyParam}}{{#hasAuthMethods}}{{#authMethods}}{{#supportTokenSource}}async {{/supportTokenSource}}{{/authMethods}}{{/hasAuthMethods}}{{/supportAsync}}fn {{{operationId}}}_request_builder(configuration: &configuration::Configuration, {{#allParams}}{{{paramName}}}: {{!
 ### Option Start
 }}{{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{!
+### File types - include metadata for multipart uploads
+}}{{#isFile}}{{#isArray}}Vec<{{/isArray}}UploadFile{{#isArray}}>{{/isArray}}{{/isFile}}{{!
 ### &str and Vec<&str>
-}}{{#isString}}{{#isArray}}Vec<{{/isArray}}{{^isUuid}}&str{{/isUuid}}{{#isArray}}>{{/isArray}}{{/isString}}{{!
+}}{{^isFile}}{{#isString}}{{#isArray}}Vec<{{/isArray}}{{^isUuid}}&str{{/isUuid}}{{#isArray}}>{{/isArray}}{{/isString}}{{/isFile}}{{!
 ### UUIDs
-}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isUuid}}{{!
+}}{{^isFile}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isUuid}}{{/isFile}}{{!
 ### Models and primative types
-}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{!
+}}{{^isFile}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{/isFile}}{{!
 ### Option End
 }}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{!
 ### Comma for next arguement
@@ -192,8 +203,8 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
     if let Some(ref param_value) = {{{vendorExtensions.x-rust-param-identifier}}} {
         {{#isArray}}
         req_builder = match "{{collectionFormat}}" {
-            "multi" => req_builder.query(&param_value.into_iter().map(|p| ("{{{baseName}}}".to_owned(), p.to_string())).collect::<Vec<(std::string::String, std::string::String)>>()),
-            _ => req_builder.query(&[("{{{baseName}}}", &param_value.into_iter().map(|p| p.to_string()).collect::<Vec<String>>().join(",").to_string())]),
+            "multi" => req_builder.query(&param_value.iter().map(|p| ("{{{baseName}}}".to_owned(), p.to_string())).collect::<Vec<(std::string::String, std::string::String)>>()),
+            _ => req_builder.query(&[("{{{baseName}}}", &param_value.iter().map(|p| p.to_string()).collect::<Vec<String>>().join(",").to_string())]),
         };
         {{/isArray}}
         {{^isArray}}
@@ -345,23 +356,132 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
     {{^supportAsync}}
     {{#required}}
     {{^isNullable}}
-    multipart_form = multipart_form.file("{{{baseName}}}", {{{vendorExtensions.x-rust-param-identifier}}})?;
+    {{#isArray}}
+    for file_data in {{{vendorExtensions.x-rust-param-identifier}}} {
+        let part = Part::bytes(file_data.content)
+            .file_name(file_data.name)
+            .mime_str(&file_data.content_type)
+            .map_err(serde_json::Error::custom)?;
+        multipart_form = multipart_form.part("{{{baseName}}}", part);
+    }
+    {{/isArray}}
+    {{^isArray}}
+    let part = Part::bytes({{{vendorExtensions.x-rust-param-identifier}}}.content)
+        .file_name({{{vendorExtensions.x-rust-param-identifier}}}.name)
+        .mime_str(&{{{vendorExtensions.x-rust-param-identifier}}}.content_type)
+        .map_err(serde_json::Error::custom)?;
+    multipart_form = multipart_form.part("{{{baseName}}}", part);
+    {{/isArray}}
     {{/isNullable}}
     {{#isNullable}}
     match {{{vendorExtensions.x-rust-param-identifier}}} {
-        Some(param_value) => { multipart_form = multipart_form.file("{{{baseName}}}", param_value)?; },
+        Some(param_value) => {
+            {{#isArray}}
+            for file_data in param_value {
+                let part = Part::bytes(file_data.content)
+                    .file_name(file_data.name)
+                    .mime_str(&file_data.content_type)
+                    .map_err(serde_json::Error::custom)?;
+                multipart_form = multipart_form.part("{{{baseName}}}", part);
+            }
+            {{/isArray}}
+            {{^isArray}}
+            let part = Part::bytes(param_value.content)
+                .file_name(param_value.name)
+                .mime_str(&param_value.content_type)
+                .map_err(serde_json::Error::custom)?;
+            multipart_form = multipart_form.part("{{{baseName}}}", part);
+            {{/isArray}}
+        },
         None => { unimplemented!("Required nullable form file param not supported"); },
     }
     {{/isNullable}}
     {{/required}}
     {{^required}}
     if let Some(param_value) = {{{vendorExtensions.x-rust-param-identifier}}} {
-        multipart_form = multipart_form.file("{{{baseName}}}", param_value)?;
+        {{#isArray}}
+        for file_data in param_value {
+            let part = Part::bytes(file_data.content)
+                .file_name(file_data.name)
+                .mime_str(&file_data.content_type)
+                .map_err(serde_json::Error::custom)?;
+            multipart_form = multipart_form.part("{{{baseName}}}", part);
+        }
+        {{/isArray}}
+        {{^isArray}}
+        let part = Part::bytes(param_value.content)
+            .file_name(param_value.name)
+            .mime_str(&param_value.content_type)
+            .map_err(serde_json::Error::custom)?;
+        multipart_form = multipart_form.part("{{{baseName}}}", part);
+        {{/isArray}}
     }
     {{/required}}
     {{/supportAsync}}
     {{#supportAsync}}
-    // TODO: support file upload for '{{{baseName}}}' parameter
+    {{#required}}
+    {{^isNullable}}
+    {{#isArray}}
+    for file_data in {{{vendorExtensions.x-rust-param-identifier}}} {
+        let part = Part::bytes(file_data.content)
+            .file_name(file_data.name)
+            .mime_str(&file_data.content_type)
+            .map_err(serde_json::Error::custom)?;
+        multipart_form = multipart_form.part("{{{baseName}}}", part);
+    }
+    {{/isArray}}
+    {{^isArray}}
+    let part = Part::bytes({{{vendorExtensions.x-rust-param-identifier}}}.content)
+        .file_name({{{vendorExtensions.x-rust-param-identifier}}}.name)
+        .mime_str(&{{{vendorExtensions.x-rust-param-identifier}}}.content_type)
+        .map_err(serde_json::Error::custom)?;
+    multipart_form = multipart_form.part("{{{baseName}}}", part);
+    {{/isArray}}
+    {{/isNullable}}
+    {{#isNullable}}
+    match {{{vendorExtensions.x-rust-param-identifier}}} {
+        Some(param_value) => {
+            {{#isArray}}
+            for file_data in param_value {
+                let part = Part::bytes(file_data.content)
+                    .file_name(file_data.name)
+                    .mime_str(&file_data.content_type)
+                    .map_err(serde_json::Error::custom)?;
+                multipart_form = multipart_form.part("{{{baseName}}}", part);
+            }
+            {{/isArray}}
+            {{^isArray}}
+            let part = Part::bytes(param_value.content)
+                .file_name(param_value.name)
+                .mime_str(&param_value.content_type)
+                .map_err(serde_json::Error::custom)?;
+            multipart_form = multipart_form.part("{{{baseName}}}", part);
+            {{/isArray}}
+        },
+        None => { unimplemented!("Required nullable form file param not supported"); },
+    }
+    {{/isNullable}}
+    {{/required}}
+    {{^required}}
+        if let Some(param_value) = {{{vendorExtensions.x-rust-param-identifier}}} {
+        {{#isArray}}
+        for file_data in param_value {
+            let part = Part::bytes(file_data.content)
+                .file_name(file_data.name)
+                .mime_str(&file_data.content_type)
+                .map_err(serde_json::Error::custom)?;
+            multipart_form = multipart_form.part("{{{baseName}}}", part);
+        }
+        {{/isArray}}
+        {{^isArray}}
+        let part = Part::bytes(param_value.content)
+            .file_name(param_value.name)
+            .mime_str(&param_value.content_type)
+            .map_err(serde_json::Error::custom)?;
+        multipart_form = multipart_form.part("{{{baseName}}}", part);
+        {{/isArray}}
+    }
+    {{/required}}
     {{/supportAsync}}
     {{/isFile}}
     {{^isFile}}
@@ -433,23 +553,27 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
     {{#hasBodyParam}}
     {{#bodyParams}}
     {{#isFile}}
-    {{#supportAsync}}
     {{#required}}
-    let file = TokioFile::open({{{vendorExtensions.x-rust-param-identifier}}}).await?;
-    let stream = FramedRead::new(file, BytesCodec::new());
-    req_builder = req_builder.body(reqwest::Body::wrap_stream(stream));
+    {{^isNullable}}
+    let body_bytes = {{{vendorExtensions.x-rust-param-identifier}}}{{#isArray}}.into_iter().flat_map(|f| f.content).collect::<Vec<u8>>(){{/isArray}}{{^isArray}}.content{{/isArray}};
+    req_builder = req_builder.body(body_bytes);
+    {{/isNullable}}
+    {{#isNullable}}
+    match {{{vendorExtensions.x-rust-param-identifier}}} {
+        Some(param_value) => {
+            let body_bytes = param_value{{#isArray}}.into_iter().flat_map(|f| f.content).collect::<Vec<u8>>(){{/isArray}}{{^isArray}}.content{{/isArray}};
+            req_builder = req_builder.body(body_bytes);
+        },
+        None => { unimplemented!("Required nullable body file param not supported"); },
+    }
+    {{/isNullable}}
     {{/required}}
     {{^required}}
     if let Some(param_value) = {{{vendorExtensions.x-rust-param-identifier}}} {
-        let file = TokioFile::open(param_value).await?;
-        let stream = FramedRead::new(file, BytesCodec::new());
-        req_builder = req_builder.body(reqwest::Body::wrap_stream(stream));
+        let body_bytes = param_value{{#isArray}}.into_iter().flat_map(|f| f.content).collect::<Vec<u8>>(){{/isArray}}{{^isArray}}.content{{/isArray}};
+        req_builder = req_builder.body(body_bytes);
     }
     {{/required}}
-    {{/supportAsync}}
-    {{^supportAsync}}
-    req_builder = req_builder.body({{{vendorExtensions.x-rust-param-identifier}}});
-    {{/supportAsync}}
     {{/isFile}}
     {{^isFile}}
     req_builder = req_builder.json(&{{{vendorExtensions.x-rust-param-identifier}}});
@@ -483,12 +607,14 @@ pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: 
 pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: &configuration::Configuration, {{#allParams}}{{{paramName}}}: {{!
 ### Option Start
 }}{{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{!
+### File types - include metadata for multipart uploads
+}}{{#isFile}}{{#isArray}}Vec<{{/isArray}}UploadFile{{#isArray}}>{{/isArray}}{{/isFile}}{{!
 ### &str and Vec<&str>
-}}{{#isString}}{{#isArray}}Vec<{{/isArray}}{{^isUuid}}&str{{/isUuid}}{{#isArray}}>{{/isArray}}{{/isString}}{{!
+}}{{^isFile}}{{#isString}}{{#isArray}}Vec<{{/isArray}}{{^isUuid}}&str{{/isUuid}}{{#isArray}}>{{/isArray}}{{/isString}}{{/isFile}}{{!
 ### UUIDs
-}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isUuid}}{{!
+}}{{^isFile}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isUuid}}{{/isFile}}{{!
 ### Models and primative types
-}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{!
+}}{{^isFile}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{/isFile}}{{!
 ### Option End
 }}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{!
 ### Comma for next arguement
@@ -538,12 +664,12 @@ pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: 
         match content_type {
             ContentType::Json => serde_json::from_str(&content).map_err(Error::from),
             {{#vendorExtensions.x-supports-plain-text}}
-            ContentType::Text => return Ok(content),
+            ContentType::Text => Ok(content),
             {{/vendorExtensions.x-supports-plain-text}}
             {{^vendorExtensions.x-supports-plain-text}}
-            ContentType::Text => return Err(Error::from(serde_json::Error::custom("Received `text/plain` content type response that cannot be converted to `{{returnType}}`"))),
+            ContentType::Text => Err(Error::from(serde_json::Error::custom("Received `text/plain` content type response that cannot be converted to `{{returnType}}`"))),
             {{/vendorExtensions.x-supports-plain-text}}
-            ContentType::Unsupported(unknown_type) => return Err(Error::from(serde_json::Error::custom(format!("Received `{unknown_type}` content type response that cannot be converted to `{{returnType}}`")))),
+            ContentType::Unsupported(unknown_type) => Err(Error::from(serde_json::Error::custom(format!("Received `{unknown_type}` content type response that cannot be converted to `{{returnType}}`")))),
         }
         {{/returnType}}
         {{/isResponseFile}}
