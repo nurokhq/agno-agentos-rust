@@ -108,7 +108,10 @@ pub async fn cancel_workflow_run(
         .map_err(|e| match e {
             Error::Serde(e) => Error::Serde(e),
             Error::Io(e) => Error::Io(e),
-            _ => unreachable!(),
+            Error::Reqwest(e) => Error::Reqwest(e),
+            Error::ResponseError(_) => {
+                unreachable!("A request builder should not produce a ResponseError")
+            }
         })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -213,7 +216,10 @@ pub async fn create_workflow_run(
     .map_err(|e| match e {
         Error::Serde(e) => Error::Serde(e),
         Error::Io(e) => Error::Io(e),
-        _ => unreachable!(),
+        Error::Reqwest(e) => Error::Reqwest(e),
+        Error::ResponseError(_) => {
+            unreachable!("A request builder should not produce a ResponseError")
+        }
     })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -285,7 +291,10 @@ pub async fn get_workflow(
         get_workflow_request_builder(configuration, workflow_id).map_err(|e| match e {
             Error::Serde(e) => Error::Serde(e),
             Error::Io(e) => Error::Io(e),
-            _ => unreachable!(),
+            Error::Reqwest(e) => Error::Reqwest(e),
+            Error::ResponseError(_) => {
+                unreachable!("A request builder should not produce a ResponseError")
+            }
         })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -347,7 +356,10 @@ pub async fn get_workflows(
     let req_builder = get_workflows_request_builder(configuration).map_err(|e| match e {
         Error::Serde(e) => Error::Serde(e),
         Error::Io(e) => Error::Io(e),
-        _ => unreachable!(),
+        Error::Reqwest(e) => Error::Reqwest(e),
+        Error::ResponseError(_) => {
+            unreachable!("A request builder should not produce a ResponseError")
+        }
     })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -421,7 +433,10 @@ pub async fn run_parse_workflow_workflows_parse_post(
     .map_err(|e| match e {
         Error::Serde(e) => Error::Serde(e),
         Error::Io(e) => Error::Io(e),
-        _ => unreachable!(),
+        Error::Reqwest(e) => Error::Reqwest(e),
+        Error::ResponseError(_) => {
+            unreachable!("A request builder should not produce a ResponseError")
+        }
     })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;

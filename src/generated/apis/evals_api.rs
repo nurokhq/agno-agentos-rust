@@ -112,7 +112,10 @@ pub async fn delete_eval_runs(
             |e| match e {
                 Error::Serde(e) => Error::Serde(e),
                 Error::Io(e) => Error::Io(e),
-                _ => unreachable!(),
+                Error::Reqwest(e) => Error::Reqwest(e),
+                Error::ResponseError(_) => {
+                    unreachable!("A request builder should not produce a ResponseError")
+                }
             },
         )?;
     let req = req_builder.build()?;
@@ -172,7 +175,10 @@ pub async fn get_eval_run(
         get_eval_run_request_builder(configuration, eval_run_id, db_id).map_err(|e| match e {
             Error::Serde(e) => Error::Serde(e),
             Error::Io(e) => Error::Io(e),
-            _ => unreachable!(),
+            Error::Reqwest(e) => Error::Reqwest(e),
+            Error::ResponseError(_) => {
+                unreachable!("A request builder should not produce a ResponseError")
+            }
         })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -316,7 +322,10 @@ pub async fn get_eval_runs(
     .map_err(|e| match e {
         Error::Serde(e) => Error::Serde(e),
         Error::Io(e) => Error::Io(e),
-        _ => unreachable!(),
+        Error::Reqwest(e) => Error::Reqwest(e),
+        Error::ResponseError(_) => {
+            unreachable!("A request builder should not produce a ResponseError")
+        }
     })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -393,7 +402,10 @@ pub async fn run_eval(
         run_eval_request_builder(configuration, eval_run_input, db_id).map_err(|e| match e {
             Error::Serde(e) => Error::Serde(e),
             Error::Io(e) => Error::Io(e),
-            _ => unreachable!(),
+            Error::Reqwest(e) => Error::Reqwest(e),
+            Error::ResponseError(_) => {
+                unreachable!("A request builder should not produce a ResponseError")
+            }
         })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -478,7 +490,10 @@ pub async fn update_eval_run(
             .map_err(|e| match e {
                 Error::Serde(e) => Error::Serde(e),
                 Error::Io(e) => Error::Io(e),
-                _ => unreachable!(),
+                Error::Reqwest(e) => Error::Reqwest(e),
+                Error::ResponseError(_) => {
+                    unreachable!("A request builder should not produce a ResponseError")
+                }
             })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;

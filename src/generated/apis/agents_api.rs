@@ -112,7 +112,10 @@ pub async fn cancel_agent_run(
         cancel_agent_run_request_builder(configuration, agent_id, run_id).map_err(|e| match e {
             Error::Serde(e) => Error::Serde(e),
             Error::Io(e) => Error::Io(e),
-            _ => unreachable!(),
+            Error::Reqwest(e) => Error::Reqwest(e),
+            Error::ResponseError(_) => {
+                unreachable!("A request builder should not produce a ResponseError")
+            }
         })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -222,7 +225,10 @@ pub async fn continue_agent_run(
     .map_err(|e| match e {
         Error::Serde(e) => Error::Serde(e),
         Error::Io(e) => Error::Io(e),
-        _ => unreachable!(),
+        Error::Reqwest(e) => Error::Reqwest(e),
+        Error::ResponseError(_) => {
+            unreachable!("A request builder should not produce a ResponseError")
+        }
     })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -332,7 +338,10 @@ pub async fn create_agent_run(
     .map_err(|e| match e {
         Error::Serde(e) => Error::Serde(e),
         Error::Io(e) => Error::Io(e),
-        _ => unreachable!(),
+        Error::Reqwest(e) => Error::Reqwest(e),
+        Error::ResponseError(_) => {
+            unreachable!("A request builder should not produce a ResponseError")
+        }
     })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -403,7 +412,10 @@ pub async fn get_agent(
     let req_builder = get_agent_request_builder(configuration, agent_id).map_err(|e| match e {
         Error::Serde(e) => Error::Serde(e),
         Error::Io(e) => Error::Io(e),
-        _ => unreachable!(),
+        Error::Reqwest(e) => Error::Reqwest(e),
+        Error::ResponseError(_) => {
+            unreachable!("A request builder should not produce a ResponseError")
+        }
     })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -465,7 +477,10 @@ pub async fn get_agents(
     let req_builder = get_agents_request_builder(configuration).map_err(|e| match e {
         Error::Serde(e) => Error::Serde(e),
         Error::Io(e) => Error::Io(e),
-        _ => unreachable!(),
+        Error::Reqwest(e) => Error::Reqwest(e),
+        Error::ResponseError(_) => {
+            unreachable!("A request builder should not produce a ResponseError")
+        }
     })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;

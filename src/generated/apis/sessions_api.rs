@@ -166,7 +166,10 @@ pub async fn create_session(
             .map_err(|e| match e {
                 Error::Serde(e) => Error::Serde(e),
                 Error::Io(e) => Error::Io(e),
-                _ => unreachable!(),
+                Error::Reqwest(e) => Error::Reqwest(e),
+                Error::ResponseError(_) => {
+                    unreachable!("A request builder should not produce a ResponseError")
+                }
             })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -246,7 +249,10 @@ pub async fn delete_session(
         delete_session_request_builder(configuration, session_id, db_id).map_err(|e| match e {
             Error::Serde(e) => Error::Serde(e),
             Error::Io(e) => Error::Io(e),
-            _ => unreachable!(),
+            Error::Reqwest(e) => Error::Reqwest(e),
+            Error::ResponseError(_) => {
+                unreachable!("A request builder should not produce a ResponseError")
+            }
         })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -311,7 +317,10 @@ pub async fn delete_sessions(
             .map_err(|e| match e {
                 Error::Serde(e) => Error::Serde(e),
                 Error::Io(e) => Error::Io(e),
-                _ => unreachable!(),
+                Error::Reqwest(e) => Error::Reqwest(e),
+                Error::ResponseError(_) => {
+                    unreachable!("A request builder should not produce a ResponseError")
+                }
             })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -383,7 +392,10 @@ pub async fn get_session_by_id(
             .map_err(|e| match e {
                 Error::Serde(e) => Error::Serde(e),
                 Error::Io(e) => Error::Io(e),
-                _ => unreachable!(),
+                Error::Reqwest(e) => Error::Reqwest(e),
+                Error::ResponseError(_) => {
+                    unreachable!("A request builder should not produce a ResponseError")
+                }
             })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -478,7 +490,10 @@ pub async fn get_session_run(
             .map_err(|e| match e {
                 Error::Serde(e) => Error::Serde(e),
                 Error::Io(e) => Error::Io(e),
-                _ => unreachable!(),
+                Error::Reqwest(e) => Error::Reqwest(e),
+                Error::ResponseError(_) => {
+                    unreachable!("A request builder should not produce a ResponseError")
+                }
             })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -588,7 +603,10 @@ pub async fn get_session_runs(
     .map_err(|e| match e {
         Error::Serde(e) => Error::Serde(e),
         Error::Io(e) => Error::Io(e),
-        _ => unreachable!(),
+        Error::Reqwest(e) => Error::Reqwest(e),
+        Error::ResponseError(_) => {
+            unreachable!("A request builder should not produce a ResponseError")
+        }
     })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -718,7 +736,10 @@ pub async fn get_sessions(
     .map_err(|e| match e {
         Error::Serde(e) => Error::Serde(e),
         Error::Io(e) => Error::Io(e),
-        _ => unreachable!(),
+        Error::Reqwest(e) => Error::Reqwest(e),
+        Error::ResponseError(_) => {
+            unreachable!("A request builder should not produce a ResponseError")
+        }
     })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -814,7 +835,10 @@ pub async fn rename_session(
     .map_err(|e| match e {
         Error::Serde(e) => Error::Serde(e),
         Error::Io(e) => Error::Io(e),
-        _ => unreachable!(),
+        Error::Reqwest(e) => Error::Reqwest(e),
+        Error::ResponseError(_) => {
+            unreachable!("A request builder should not produce a ResponseError")
+        }
     })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -917,7 +941,10 @@ pub async fn update_session(
     .map_err(|e| match e {
         Error::Serde(e) => Error::Serde(e),
         Error::Io(e) => Error::Io(e),
-        _ => unreachable!(),
+        Error::Reqwest(e) => Error::Reqwest(e),
+        Error::ResponseError(_) => {
+            unreachable!("A request builder should not produce a ResponseError")
+        }
     })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;

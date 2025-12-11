@@ -60,7 +60,10 @@ pub async fn get_config(
     let req_builder = get_config_request_builder(configuration).map_err(|e| match e {
         Error::Serde(e) => Error::Serde(e),
         Error::Io(e) => Error::Io(e),
-        _ => unreachable!(),
+        Error::Reqwest(e) => Error::Reqwest(e),
+        Error::ResponseError(_) => {
+            unreachable!("A request builder should not produce a ResponseError")
+        }
     })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -122,7 +125,10 @@ pub async fn get_models(
     let req_builder = get_models_request_builder(configuration).map_err(|e| match e {
         Error::Serde(e) => Error::Serde(e),
         Error::Io(e) => Error::Io(e),
-        _ => unreachable!(),
+        Error::Reqwest(e) => Error::Reqwest(e),
+        Error::ResponseError(_) => {
+            unreachable!("A request builder should not produce a ResponseError")
+        }
     })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;

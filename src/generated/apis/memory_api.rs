@@ -148,7 +148,10 @@ pub async fn create_memory(
             |e| match e {
                 Error::Serde(e) => Error::Serde(e),
                 Error::Io(e) => Error::Io(e),
-                _ => unreachable!(),
+                Error::Reqwest(e) => Error::Reqwest(e),
+                Error::ResponseError(_) => {
+                    unreachable!("A request builder should not produce a ResponseError")
+                }
             },
         )?;
     let req = req_builder.build()?;
@@ -227,7 +230,10 @@ pub async fn delete_memories(
             |e| match e {
                 Error::Serde(e) => Error::Serde(e),
                 Error::Io(e) => Error::Io(e),
-                _ => unreachable!(),
+                Error::Reqwest(e) => Error::Reqwest(e),
+                Error::ResponseError(_) => {
+                    unreachable!("A request builder should not produce a ResponseError")
+                }
             },
         )?;
     let req = req_builder.build()?;
@@ -295,7 +301,10 @@ pub async fn delete_memory(
         .map_err(|e| match e {
             Error::Serde(e) => Error::Serde(e),
             Error::Io(e) => Error::Io(e),
-            _ => unreachable!(),
+            Error::Reqwest(e) => Error::Reqwest(e),
+            Error::ResponseError(_) => {
+                unreachable!("A request builder should not produce a ResponseError")
+            }
         })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -429,7 +438,10 @@ pub async fn get_memories(
     .map_err(|e| match e {
         Error::Serde(e) => Error::Serde(e),
         Error::Io(e) => Error::Io(e),
-        _ => unreachable!(),
+        Error::Reqwest(e) => Error::Reqwest(e),
+        Error::ResponseError(_) => {
+            unreachable!("A request builder should not produce a ResponseError")
+        }
     })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -513,7 +525,10 @@ pub async fn get_memory(
         .map_err(|e| match e {
             Error::Serde(e) => Error::Serde(e),
             Error::Io(e) => Error::Io(e),
-            _ => unreachable!(),
+            Error::Reqwest(e) => Error::Reqwest(e),
+            Error::ResponseError(_) => {
+                unreachable!("A request builder should not produce a ResponseError")
+            }
         })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -584,7 +599,10 @@ pub async fn get_memory_topics(
         get_memory_topics_request_builder(configuration, db_id).map_err(|e| match e {
             Error::Serde(e) => Error::Serde(e),
             Error::Io(e) => Error::Io(e),
-            _ => unreachable!(),
+            Error::Reqwest(e) => Error::Reqwest(e),
+            Error::ResponseError(_) => {
+                unreachable!("A request builder should not produce a ResponseError")
+            }
         })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -667,7 +685,10 @@ pub async fn get_user_memory_stats(
         .map_err(|e| match e {
             Error::Serde(e) => Error::Serde(e),
             Error::Io(e) => Error::Io(e),
-            _ => unreachable!(),
+            Error::Reqwest(e) => Error::Reqwest(e),
+            Error::ResponseError(_) => {
+                unreachable!("A request builder should not produce a ResponseError")
+            }
         })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
@@ -752,7 +773,10 @@ pub async fn update_memory(
             .map_err(|e| match e {
             Error::Serde(e) => Error::Serde(e),
             Error::Io(e) => Error::Io(e),
-            _ => unreachable!(),
+            Error::Reqwest(e) => Error::Reqwest(e),
+            Error::ResponseError(_) => {
+                unreachable!("A request builder should not produce a ResponseError")
+            }
         })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
