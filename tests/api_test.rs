@@ -70,7 +70,7 @@ async fn test_request_with_file() {
     };
 
     // Wrap each file's bytes in a Vec so it matches Option<Vec<Vec<u8>>>
-    let file_data = std::fs::read("tests/weather.txt").unwrap();
+    let file_data = std::fs::read("tests/files/weather.txt").unwrap();
     let files = vec![UploadFile {
         name: "weather.txt".to_string(),
         content_type: "text/plain".to_string(),
@@ -79,7 +79,7 @@ async fn test_request_with_file() {
     let _request_builder = create_agent_run_request_builder(
         &config,
         "nurok-parse-agent",
-        "What is the weather in Tokyo?",
+        "What is the weather today?",
         Some(false),
         Some("test-session-id"),
         Some("test-user-id"),
