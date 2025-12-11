@@ -80,7 +80,7 @@ This script:
 
 ## Requirements
 
-- Rust 1.70 or later
+- Rust 1.85 or later
 - OpenAPI Generator CLI (for regeneration)
 
 ## License
