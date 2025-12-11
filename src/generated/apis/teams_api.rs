@@ -183,10 +183,10 @@ pub fn create_team_run_request_builder(
     if let Some(param_value) = p_form_user_id {
         multipart_form = multipart_form.text("user_id", param_value.to_string());
     }
-    if let Some(ref param_value) = p_form_files {
+    if let Some(param_value) = p_form_files {
         for file_data in param_value {
-            let part = Part::bytes(file_data.content.clone())
-                .file_name(file_data.name.clone())
+            let part = Part::bytes(file_data.content)
+                .file_name(file_data.name)
                 .mime_str(&file_data.content_type)
                 .map_err(serde_json::Error::custom)?;
             multipart_form = multipart_form.part("files", part);

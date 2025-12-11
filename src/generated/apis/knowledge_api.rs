@@ -786,9 +786,9 @@ pub fn upload_content_request_builder(
     if let Some(param_value) = p_form_metadata {
         multipart_form = multipart_form.text("metadata", param_value.to_string());
     }
-    if let Some(ref param_value) = p_form_file {
-        let part = Part::bytes(param_value.content.clone())
-            .file_name(param_value.name.clone())
+    if let Some(param_value) = p_form_file {
+        let part = Part::bytes(param_value.content)
+            .file_name(param_value.name)
             .mime_str(&param_value.content_type)
             .map_err(serde_json::Error::custom)?;
         multipart_form = multipart_form.part("file", part);
