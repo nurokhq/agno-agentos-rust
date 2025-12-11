@@ -12,10 +12,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        with:
-          token: ${{ secrets.PACKAGES_TOKEN }}
-          submodules: recursive
-          persist-credentials: false
 
       - name: Toolchain
         uses: dtolnay/rust-toolchain@stable
