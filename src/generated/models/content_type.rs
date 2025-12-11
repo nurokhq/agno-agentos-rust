@@ -13,9 +13,12 @@ use serde::{Deserialize, Serialize};
 
 /// ContentType : Content type for parsing
 /// Content type for parsing
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub enum ContentType {
     #[serde(rename = "markdown")]
+    #[default]
     Markdown,
     #[serde(rename = "html")]
     Html,
@@ -36,11 +39,5 @@ impl std::fmt::Display for ContentType {
             Self::Json => write!(f, "json"),
             Self::Xml => write!(f, "xml"),
         }
-    }
-}
-
-impl Default for ContentType {
-    fn default() -> ContentType {
-        Self::Markdown
     }
 }

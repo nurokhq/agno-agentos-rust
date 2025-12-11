@@ -10,6 +10,13 @@ use super::{Error, configuration, ContentType};
 use tokio::fs::File as TokioFile;
 use tokio_util::codec::{BytesCodec, FramedRead};
 {{/vendorExtensions.useAsyncFileStream}}
+{{#hasFormParams}}
+{{#formParams}}
+{{#isFile}}
+use reqwest{{^supportAsync}}::blocking{{/supportAsync}}::multipart::Part;
+{{/isFile}}
+{{/formParams}}
+{{/hasFormParams}}
 {{/operation}}
 {{/operations}}
 
@@ -28,12 +35,14 @@ pub struct {{{operationIdCamelCase}}}Params {
     pub {{{paramName}}}: {{!
     ### Option Start
     }}{{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{!
+    ### File types - use Vec<u8> for flexibility (can be created from BufReader, file, etc.)
+    }}{{#isFile}}{{#isArray}}Vec<{{/isArray}}Vec<u8>{{#isArray}}>{{/isArray}}{{/isFile}}{{!
     ### &str and Vec<&str>
-    }}{{^isUuid}}{{#isString}}{{#isArray}}Vec<{{/isArray}}String{{#isArray}}>{{/isArray}}{{/isString}}{{/isUuid}}{{!
+    }}{{^isFile}}{{^isUuid}}{{#isString}}{{#isArray}}Vec<{{/isArray}}String{{#isArray}}>{{/isArray}}{{/isString}}{{/isUuid}}{{/isFile}}{{!
     ### UUIDs
-    }}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}String{{#isArray}}>{{/isArray}}{{/isUuid}}{{!
+    }}{{^isFile}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}String{{#isArray}}>{{/isArray}}{{/isUuid}}{{/isFile}}{{!
     ### Models and primative types
-    }}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{!
+    }}{{^isFile}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{/isFile}}{{!
     ### Option End
     }}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{!
     ### Comma for next arguement
@@ -110,12 +119,14 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
 pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}}{{/bodyParams}}{{/hasBodyParam}}{{#hasAuthMethods}}{{#authMethods}}{{#supportTokenSource}}async {{/supportTokenSource}}{{/authMethods}}{{/hasAuthMethods}}{{/supportAsync}}fn {{{operationId}}}_request_builder(configuration: &configuration::Configuration, {{#allParams}}{{{paramName}}}: {{!
 ### Option Start
 }}{{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{!
+### File types - use Vec<u8> for flexibility (can be created from BufReader, file, etc.)
+}}{{#isFile}}{{#isArray}}Vec<{{/isArray}}Vec<u8>{{#isArray}}>{{/isArray}}{{/isFile}}{{!
 ### &str and Vec<&str>
-}}{{#isString}}{{#isArray}}Vec<{{/isArray}}{{^isUuid}}&str{{/isUuid}}{{#isArray}}>{{/isArray}}{{/isString}}{{!
+}}{{^isFile}}{{#isString}}{{#isArray}}Vec<{{/isArray}}{{^isUuid}}&str{{/isUuid}}{{#isArray}}>{{/isArray}}{{/isString}}{{/isFile}}{{!
 ### UUIDs
-}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isUuid}}{{!
+}}{{^isFile}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isUuid}}{{/isFile}}{{!
 ### Models and primative types
-}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{!
+}}{{^isFile}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{/isFile}}{{!
 ### Option End
 }}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{!
 ### Comma for next arguement
@@ -345,23 +356,96 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
     {{^supportAsync}}
     {{#required}}
     {{^isNullable}}
-    multipart_form = multipart_form.file("{{{baseName}}}", {{{vendorExtensions.x-rust-param-identifier}}})?;
+    {{#isArray}}
+    for file_data in {{{vendorExtensions.x-rust-param-identifier}}} {
+        let part = Part::bytes(file_data).file_name("{{{baseName}}}");
+        multipart_form = multipart_form.part("{{{baseName}}}", part);
+    }
+    {{/isArray}}
+    {{^isArray}}
+    let part = Part::bytes({{{vendorExtensions.x-rust-param-identifier}}}.clone()).file_name("{{{baseName}}}");
+    multipart_form = multipart_form.part("{{{baseName}}}", part);
+    {{/isArray}}
     {{/isNullable}}
     {{#isNullable}}
     match {{{vendorExtensions.x-rust-param-identifier}}} {
-        Some(param_value) => { multipart_form = multipart_form.file("{{{baseName}}}", param_value)?; },
+        Some(param_value) => {
+            {{#isArray}}
+            for file_data in param_value {
+                let part = Part::bytes(file_data).file_name("{{{baseName}}}");
+                multipart_form = multipart_form.part("{{{baseName}}}", part);
+            }
+            {{/isArray}}
+            {{^isArray}}
+            let part = Part::bytes(param_value.clone()).file_name("{{{baseName}}}");
+            multipart_form = multipart_form.part("{{{baseName}}}", part);
+            {{/isArray}}
+        },
         None => { unimplemented!("Required nullable form file param not supported"); },
     }
     {{/isNullable}}
     {{/required}}
     {{^required}}
     if let Some(param_value) = {{{vendorExtensions.x-rust-param-identifier}}} {
-        multipart_form = multipart_form.file("{{{baseName}}}", param_value)?;
+        {{#isArray}}
+        for file_data in param_value {
+            let part = Part::bytes(file_data).file_name("{{{baseName}}}");
+            multipart_form = multipart_form.part("{{{baseName}}}", part);
+        }
+        {{/isArray}}
+        {{^isArray}}
+        let part = Part::bytes(param_value.clone()).file_name("{{{baseName}}}");
+        multipart_form = multipart_form.part("{{{baseName}}}", part);
+        {{/isArray}}
     }
     {{/required}}
     {{/supportAsync}}
     {{#supportAsync}}
-    // TODO: support file upload for '{{{baseName}}}' parameter
+    {{#required}}
+    {{^isNullable}}
+    {{#isArray}}
+    for file_data in {{{vendorExtensions.x-rust-param-identifier}}} {
+        let part = Part::bytes(file_data.clone()).file_name("{{{baseName}}}");
+        multipart_form = multipart_form.part("{{{baseName}}}", part);
+    }
+    {{/isArray}}
+    {{^isArray}}
+    let part = Part::bytes({{{vendorExtensions.x-rust-param-identifier}}}.clone()).file_name("{{{baseName}}}");
+    multipart_form = multipart_form.part("{{{baseName}}}", part);
+    {{/isArray}}
+    {{/isNullable}}
+    {{#isNullable}}
+    match {{{vendorExtensions.x-rust-param-identifier}}} {
+        Some(param_value) => {
+            {{#isArray}}
+            for file_data in param_value {
+                let part = Part::bytes(file_data.clone()).file_name("{{{baseName}}}");
+                multipart_form = multipart_form.part("{{{baseName}}}", part);
+            }
+            {{/isArray}}
+            {{^isArray}}
+            let part = Part::bytes(param_value.clone()).file_name("{{{baseName}}}");
+            multipart_form = multipart_form.part("{{{baseName}}}", part);
+            {{/isArray}}
+        },
+        None => { unimplemented!("Required nullable form file param not supported"); },
+    }
+    {{/isNullable}}
+    {{/required}}
+    {{^required}}
+    if let Some(param_value) = {{{vendorExtensions.x-rust-param-identifier}}} {
+        {{#isArray}}
+        for file_data in param_value {
+            let part = Part::bytes(file_data.clone()).file_name("{{{baseName}}}");
+            multipart_form = multipart_form.part("{{{baseName}}}", part);
+        }
+        {{/isArray}}
+        {{^isArray}}
+        let part = Part::bytes(param_value.clone()).file_name("{{{baseName}}}");
+        multipart_form = multipart_form.part("{{{baseName}}}", part);
+        {{/isArray}}
+    }
+    {{/required}}
     {{/supportAsync}}
     {{/isFile}}
     {{^isFile}}
@@ -433,23 +517,24 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
     {{#hasBodyParam}}
     {{#bodyParams}}
     {{#isFile}}
-    {{#supportAsync}}
     {{#required}}
-    let file = TokioFile::open({{{vendorExtensions.x-rust-param-identifier}}}).await?;
-    let stream = FramedRead::new(file, BytesCodec::new());
-    req_builder = req_builder.body(reqwest::Body::wrap_stream(stream));
+    {{^isNullable}}
+    req_builder = req_builder.body({{{vendorExtensions.x-rust-param-identifier}}}{{#isArray}}.concat(){{/isArray}}.clone());
+    {{/isNullable}}
+    {{#isNullable}}
+    match {{{vendorExtensions.x-rust-param-identifier}}} {
+        Some(param_value) => {
+            req_builder = req_builder.body(param_value{{#isArray}}.concat(){{/isArray}}.clone());
+        },
+        None => { unimplemented!("Required nullable body file param not supported"); },
+    }
+    {{/isNullable}}
     {{/required}}
     {{^required}}
     if let Some(param_value) = {{{vendorExtensions.x-rust-param-identifier}}} {
-        let file = TokioFile::open(param_value).await?;
-        let stream = FramedRead::new(file, BytesCodec::new());
-        req_builder = req_builder.body(reqwest::Body::wrap_stream(stream));
+        req_builder = req_builder.body(param_value{{#isArray}}.concat(){{/isArray}}.clone());
     }
     {{/required}}
-    {{/supportAsync}}
-    {{^supportAsync}}
-    req_builder = req_builder.body({{{vendorExtensions.x-rust-param-identifier}}});
-    {{/supportAsync}}
     {{/isFile}}
     {{^isFile}}
     req_builder = req_builder.json(&{{{vendorExtensions.x-rust-param-identifier}}});
@@ -483,12 +568,14 @@ pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: 
 pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: &configuration::Configuration, {{#allParams}}{{{paramName}}}: {{!
 ### Option Start
 }}{{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{!
+### File types - use Vec<u8> for flexibility (can be created from BufReader, file, etc.)
+}}{{#isFile}}{{#isArray}}Vec<{{/isArray}}Vec<u8>{{#isArray}}>{{/isArray}}{{/isFile}}{{!
 ### &str and Vec<&str>
-}}{{#isString}}{{#isArray}}Vec<{{/isArray}}{{^isUuid}}&str{{/isUuid}}{{#isArray}}>{{/isArray}}{{/isString}}{{!
+}}{{^isFile}}{{#isString}}{{#isArray}}Vec<{{/isArray}}{{^isUuid}}&str{{/isUuid}}{{#isArray}}>{{/isArray}}{{/isString}}{{/isFile}}{{!
 ### UUIDs
-}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isUuid}}{{!
+}}{{^isFile}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isUuid}}{{/isFile}}{{!
 ### Models and primative types
-}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{!
+}}{{^isFile}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{/isFile}}{{!
 ### Option End
 }}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{!
 ### Comma for next arguement

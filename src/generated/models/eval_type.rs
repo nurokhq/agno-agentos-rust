@@ -12,9 +12,12 @@ use crate::models;
 use serde::{Deserialize, Serialize};
 
 ///
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub enum EvalType {
     #[serde(rename = "accuracy")]
+    #[default]
     Accuracy,
     #[serde(rename = "performance")]
     Performance,
@@ -29,11 +32,5 @@ impl std::fmt::Display for EvalType {
             Self::Performance => write!(f, "performance"),
             Self::Reliability => write!(f, "reliability"),
         }
-    }
-}
-
-impl Default for EvalType {
-    fn default() -> EvalType {
-        Self::Accuracy
     }
 }

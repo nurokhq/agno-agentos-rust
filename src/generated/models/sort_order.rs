@@ -12,9 +12,12 @@ use crate::models;
 use serde::{Deserialize, Serialize};
 
 ///
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub enum SortOrder {
     #[serde(rename = "asc")]
+    #[default]
     Asc,
     #[serde(rename = "desc")]
     Desc,
@@ -26,11 +29,5 @@ impl std::fmt::Display for SortOrder {
             Self::Asc => write!(f, "asc"),
             Self::Desc => write!(f, "desc"),
         }
-    }
-}
-
-impl Default for SortOrder {
-    fn default() -> SortOrder {
-        Self::Asc
     }
 }

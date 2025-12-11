@@ -11,6 +11,7 @@
 use super::{ContentType, Error, configuration};
 use crate::{apis::ResponseContent, models};
 use reqwest;
+use reqwest::multipart::Part;
 use serde::{Deserialize, Serialize, de::Error as _};
 
 /// struct for typed errors of method [`delete_all_content`]
@@ -758,7 +759,7 @@ pub fn upload_content_request_builder(
     description: Option<&str>,
     url: Option<&str>,
     metadata: Option<&str>,
-    file: Option<std::path::PathBuf>,
+    file: Option<Vec<u8>>,
     text_content: Option<&str>,
     reader_id: Option<&str>,
     chunker: Option<&str>,
@@ -801,7 +802,10 @@ pub fn upload_content_request_builder(
     if let Some(param_value) = p_form_metadata {
         multipart_form = multipart_form.text("metadata", param_value.to_string());
     }
-    // TODO: support file upload for 'file' parameter
+    if let Some(param_value) = p_form_file {
+        let part = Part::bytes(param_value.clone()).file_name("file");
+        multipart_form = multipart_form.part("file", part);
+    }
     if let Some(param_value) = p_form_text_content {
         multipart_form = multipart_form.text("text_content", param_value.to_string());
     }
@@ -823,7 +827,7 @@ pub async fn upload_content(
     description: Option<&str>,
     url: Option<&str>,
     metadata: Option<&str>,
-    file: Option<std::path::PathBuf>,
+    file: Option<Vec<u8>>,
     text_content: Option<&str>,
     reader_id: Option<&str>,
     chunker: Option<&str>,

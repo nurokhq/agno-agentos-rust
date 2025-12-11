@@ -11,6 +11,7 @@
 use super::{ContentType, Error, configuration};
 use crate::{apis::ResponseContent, models};
 use reqwest;
+use reqwest::multipart::Part;
 use serde::{Deserialize, Serialize, de::Error as _};
 
 /// struct for typed errors of method [`cancel_team_run`]
@@ -144,7 +145,7 @@ pub fn create_team_run_request_builder(
     monitor: Option<bool>,
     session_id: Option<&str>,
     user_id: Option<&str>,
-    files: Option<Vec<std::path::PathBuf>>,
+    files: Option<Vec<Vec<u8>>>,
 ) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_team_id = team_id;
@@ -184,7 +185,12 @@ pub fn create_team_run_request_builder(
     if let Some(param_value) = p_form_user_id {
         multipart_form = multipart_form.text("user_id", param_value.to_string());
     }
-    // TODO: support file upload for 'files' parameter
+    if let Some(param_value) = p_form_files {
+        for file_data in param_value {
+            let part = Part::bytes(file_data.clone()).file_name("files");
+            multipart_form = multipart_form.part("files", part);
+        }
+    }
     req_builder = req_builder.multipart(multipart_form);
 
     Ok(req_builder)
@@ -198,7 +204,7 @@ pub async fn create_team_run(
     monitor: Option<bool>,
     session_id: Option<&str>,
     user_id: Option<&str>,
-    files: Option<Vec<std::path::PathBuf>>,
+    files: Option<Vec<Vec<u8>>>,
 ) -> Result<serde_json::Value, Error<CreateTeamRunError>> {
     let req_builder = create_team_run_request_builder(
         configuration,

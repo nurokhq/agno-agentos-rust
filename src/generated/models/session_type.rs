@@ -12,9 +12,12 @@ use crate::models;
 use serde::{Deserialize, Serialize};
 
 ///
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
+)]
 pub enum SessionType {
     #[serde(rename = "agent")]
+    #[default]
     Agent,
     #[serde(rename = "team")]
     Team,
@@ -29,11 +32,5 @@ impl std::fmt::Display for SessionType {
             Self::Team => write!(f, "team"),
             Self::Workflow => write!(f, "workflow"),
         }
-    }
-}
-
-impl Default for SessionType {
-    fn default() -> SessionType {
-        Self::Agent
     }
 }
