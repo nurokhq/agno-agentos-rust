@@ -5,7 +5,7 @@ edition = "2024"
 description = "Rust Client for Agno AgentOS"
 license = "MIT"
 repository = "https://github.com/nurokhq/agno-agentos-rust"
-homepage = "https://docs.agno.com/reference-api/overview"
+homepage = "https://github.com/nurokhq/agno-agentos-rust"
 documentation = "https://docs.agno.com/reference-api/overview"
 
 [features]
