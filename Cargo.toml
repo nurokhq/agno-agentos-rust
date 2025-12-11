@@ -7,6 +7,9 @@ license = "MIT"
 repository = "https://github.com/nurokhq/agno-agentos-rust"
 homepage = "https://github.com/nurokhq/agno-agentos-rust"
 documentation = "https://docs.agno.com/reference-api/overview"
+authors = ["Rui Zhang <zr@nurok.ai>", "Jian Fang <fj@nurok.ai>"] 
+keywords = ["api", "client", "agno", "agentos"]
+categories = ["api-bindings"]
 
 [features]
 default = ["rustls-tls"]
