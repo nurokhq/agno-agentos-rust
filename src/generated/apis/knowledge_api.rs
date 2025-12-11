@@ -9,7 +9,7 @@
  */
 
 use super::{ContentType, Error, configuration};
-use crate::generated::{apis::ResponseContent, models};
+use crate::{apis::ResponseContent, models};
 use reqwest;
 use serde::{Deserialize, Serialize, de::Error as _};
 
@@ -203,7 +203,7 @@ pub fn delete_content_by_id_request_builder(
     let uri_str = format!(
         "{}/knowledge/content/{content_id}",
         configuration.base_path,
-        content_id = crate::generated::apis::urlencode(p_path_content_id)
+        content_id = crate::apis::urlencode(p_path_content_id)
     );
     let mut req_builder = configuration
         .client
@@ -371,7 +371,7 @@ pub fn get_content_by_id_request_builder(
     let uri_str = format!(
         "{}/knowledge/content/{content_id}",
         configuration.base_path,
-        content_id = crate::generated::apis::urlencode(p_path_content_id)
+        content_id = crate::apis::urlencode(p_path_content_id)
     );
     let mut req_builder = configuration.client.request(reqwest::Method::GET, &uri_str);
 
@@ -445,7 +445,7 @@ pub fn get_content_status_request_builder(
     let uri_str = format!(
         "{}/knowledge/content/{content_id}/status",
         configuration.base_path,
-        content_id = crate::generated::apis::urlencode(p_path_content_id)
+        content_id = crate::apis::urlencode(p_path_content_id)
     );
     let mut req_builder = configuration.client.request(reqwest::Method::GET, &uri_str);
 
@@ -661,7 +661,7 @@ pub fn update_content_request_builder(
     let uri_str = format!(
         "{}/knowledge/content/{content_id}",
         configuration.base_path,
-        content_id = crate::generated::apis::urlencode(p_path_content_id)
+        content_id = crate::apis::urlencode(p_path_content_id)
     );
     let mut req_builder = configuration
         .client

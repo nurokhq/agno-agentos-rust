@@ -9,7 +9,7 @@
  */
 
 use super::{ContentType, Error, configuration};
-use crate::generated::{apis::ResponseContent, models};
+use crate::{apis::ResponseContent, models};
 use reqwest;
 use serde::{Deserialize, Serialize, de::Error as _};
 
@@ -86,8 +86,8 @@ pub fn cancel_agent_run_request_builder(
     let uri_str = format!(
         "{}/agents/{agent_id}/runs/{run_id}/cancel",
         configuration.base_path,
-        agent_id = crate::generated::apis::urlencode(p_path_agent_id),
-        run_id = crate::generated::apis::urlencode(p_path_run_id)
+        agent_id = crate::apis::urlencode(p_path_agent_id),
+        run_id = crate::apis::urlencode(p_path_run_id)
     );
     let mut req_builder = configuration
         .client
@@ -168,8 +168,8 @@ pub fn continue_agent_run_request_builder(
     let uri_str = format!(
         "{}/agents/{agent_id}/runs/{run_id}/continue",
         configuration.base_path,
-        agent_id = crate::generated::apis::urlencode(p_path_agent_id),
-        run_id = crate::generated::apis::urlencode(p_path_run_id)
+        agent_id = crate::apis::urlencode(p_path_agent_id),
+        run_id = crate::apis::urlencode(p_path_run_id)
     );
     let mut req_builder = configuration
         .client
@@ -274,7 +274,7 @@ pub fn create_agent_run_request_builder(
     let uri_str = format!(
         "{}/agents/{agent_id}/runs",
         configuration.base_path,
-        agent_id = crate::generated::apis::urlencode(p_path_agent_id)
+        agent_id = crate::apis::urlencode(p_path_agent_id)
     );
     let mut req_builder = configuration
         .client
@@ -370,7 +370,7 @@ pub fn get_agent_request_builder(
     let uri_str = format!(
         "{}/agents/{agent_id}",
         configuration.base_path,
-        agent_id = crate::generated::apis::urlencode(p_path_agent_id)
+        agent_id = crate::apis::urlencode(p_path_agent_id)
     );
     let mut req_builder = configuration.client.request(reqwest::Method::GET, &uri_str);
 

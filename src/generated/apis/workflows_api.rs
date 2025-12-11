@@ -9,7 +9,7 @@
  */
 
 use super::{ContentType, Error, configuration};
-use crate::generated::{apis::ResponseContent, models};
+use crate::{apis::ResponseContent, models};
 use reqwest;
 use serde::{Deserialize, Serialize, de::Error as _};
 
@@ -82,8 +82,8 @@ pub fn cancel_workflow_run_request_builder(
     let uri_str = format!(
         "{}/workflows/{workflow_id}/runs/{run_id}/cancel",
         configuration.base_path,
-        workflow_id = crate::generated::apis::urlencode(p_path_workflow_id),
-        run_id = crate::generated::apis::urlencode(p_path_run_id)
+        workflow_id = crate::apis::urlencode(p_path_workflow_id),
+        run_id = crate::apis::urlencode(p_path_run_id)
     );
     let mut req_builder = configuration
         .client
@@ -162,7 +162,7 @@ pub fn create_workflow_run_request_builder(
     let uri_str = format!(
         "{}/workflows/{workflow_id}/runs",
         configuration.base_path,
-        workflow_id = crate::generated::apis::urlencode(p_path_workflow_id)
+        workflow_id = crate::apis::urlencode(p_path_workflow_id)
     );
     let mut req_builder = configuration
         .client
@@ -255,7 +255,7 @@ pub fn get_workflow_request_builder(
     let uri_str = format!(
         "{}/workflows/{workflow_id}",
         configuration.base_path,
-        workflow_id = crate::generated::apis::urlencode(p_path_workflow_id)
+        workflow_id = crate::apis::urlencode(p_path_workflow_id)
     );
     let mut req_builder = configuration.client.request(reqwest::Method::GET, &uri_str);
 

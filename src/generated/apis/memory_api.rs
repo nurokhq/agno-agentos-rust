@@ -9,7 +9,7 @@
  */
 
 use super::{ContentType, Error, configuration};
-use crate::generated::{apis::ResponseContent, models};
+use crate::{apis::ResponseContent, models};
 use reqwest;
 use serde::{Deserialize, Serialize, de::Error as _};
 
@@ -253,7 +253,7 @@ pub fn delete_memory_request_builder(
     let uri_str = format!(
         "{}/memories/{memory_id}",
         configuration.base_path,
-        memory_id = crate::generated::apis::urlencode(p_path_memory_id)
+        memory_id = crate::apis::urlencode(p_path_memory_id)
     );
     let mut req_builder = configuration
         .client
@@ -465,7 +465,7 @@ pub fn get_memory_request_builder(
     let uri_str = format!(
         "{}/memories/{memory_id}",
         configuration.base_path,
-        memory_id = crate::generated::apis::urlencode(p_path_memory_id)
+        memory_id = crate::apis::urlencode(p_path_memory_id)
     );
     let mut req_builder = configuration.client.request(reqwest::Method::GET, &uri_str);
 
@@ -691,7 +691,7 @@ pub fn update_memory_request_builder(
     let uri_str = format!(
         "{}/memories/{memory_id}",
         configuration.base_path,
-        memory_id = crate::generated::apis::urlencode(p_path_memory_id)
+        memory_id = crate::apis::urlencode(p_path_memory_id)
     );
     let mut req_builder = configuration
         .client

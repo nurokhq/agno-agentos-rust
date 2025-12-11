@@ -9,7 +9,7 @@
  */
 
 use super::{ContentType, Error, configuration};
-use crate::generated::{apis::ResponseContent, models};
+use crate::{apis::ResponseContent, models};
 use reqwest;
 use serde::{Deserialize, Serialize, de::Error as _};
 
@@ -74,8 +74,8 @@ pub fn cancel_team_run_request_builder(
     let uri_str = format!(
         "{}/teams/{team_id}/runs/{run_id}/cancel",
         configuration.base_path,
-        team_id = crate::generated::apis::urlencode(p_path_team_id),
-        run_id = crate::generated::apis::urlencode(p_path_run_id)
+        team_id = crate::apis::urlencode(p_path_team_id),
+        run_id = crate::apis::urlencode(p_path_run_id)
     );
     let mut req_builder = configuration
         .client
@@ -158,7 +158,7 @@ pub fn create_team_run_request_builder(
     let uri_str = format!(
         "{}/teams/{team_id}/runs",
         configuration.base_path,
-        team_id = crate::generated::apis::urlencode(p_path_team_id)
+        team_id = crate::apis::urlencode(p_path_team_id)
     );
     let mut req_builder = configuration
         .client
@@ -259,7 +259,7 @@ pub fn get_team_request_builder(
     let uri_str = format!(
         "{}/teams/{team_id}",
         configuration.base_path,
-        team_id = crate::generated::apis::urlencode(p_path_team_id)
+        team_id = crate::apis::urlencode(p_path_team_id)
     );
     let mut req_builder = configuration.client.request(reqwest::Method::GET, &uri_str);
 

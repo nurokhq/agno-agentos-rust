@@ -1,0 +1,47 @@
+name: Build
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.PACKAGES_TOKEN }}
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: rustfmt, clippy, llvm-tools-preview
+
+      - name: Build
+        env:
+          RUSTFLAGS: "-D warnings"
+        run: cargo build
+
+      - name: Build All Features
+        env:
+          RUSTFLAGS: "-D warnings"
+        run: cargo build --all-features
+
+      - name: Check Format
+        run: cargo fmt --all -- --check
+
+      - name: Run Clippy
+        timeout-minutes: 60
+        run: cargo clippy --all-targets --all-features -j 4 -- -D warnings
+
+      - name: Run Test
+        run: cargo test --all-features
+
+      - name: Check Dirty Files
+        run: scripts/check_dirty_files.sh

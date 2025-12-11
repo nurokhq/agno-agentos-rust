@@ -9,7 +9,7 @@
  */
 
 use super::{ContentType, Error, configuration};
-use crate::generated::{apis::ResponseContent, models};
+use crate::{apis::ResponseContent, models};
 use reqwest;
 use serde::{Deserialize, Serialize, de::Error as _};
 
@@ -214,7 +214,7 @@ pub fn delete_session_request_builder(
     let uri_str = format!(
         "{}/sessions/{session_id}",
         configuration.base_path,
-        session_id = crate::generated::apis::urlencode(p_path_session_id)
+        session_id = crate::apis::urlencode(p_path_session_id)
     );
     let mut req_builder = configuration
         .client
@@ -336,7 +336,7 @@ pub fn get_session_by_id_request_builder(
     let uri_str = format!(
         "{}/sessions/{session_id}",
         configuration.base_path,
-        session_id = crate::generated::apis::urlencode(p_path_session_id)
+        session_id = crate::apis::urlencode(p_path_session_id)
     );
     let mut req_builder = configuration.client.request(reqwest::Method::GET, &uri_str);
 
@@ -425,8 +425,8 @@ pub fn get_session_run_request_builder(
     let uri_str = format!(
         "{}/sessions/{session_id}/runs/{run_id}",
         configuration.base_path,
-        session_id = crate::generated::apis::urlencode(p_path_session_id),
-        run_id = crate::generated::apis::urlencode(p_path_run_id)
+        session_id = crate::apis::urlencode(p_path_session_id),
+        run_id = crate::apis::urlencode(p_path_run_id)
     );
     let mut req_builder = configuration.client.request(reqwest::Method::GET, &uri_str);
 
@@ -518,7 +518,7 @@ pub fn get_session_runs_request_builder(
     let uri_str = format!(
         "{}/sessions/{session_id}/runs",
         configuration.base_path,
-        session_id = crate::generated::apis::urlencode(p_path_session_id)
+        session_id = crate::apis::urlencode(p_path_session_id)
     );
     let mut req_builder = configuration.client.request(reqwest::Method::GET, &uri_str);
 
@@ -746,7 +746,7 @@ pub fn rename_session_request_builder(
     let uri_str = format!(
         "{}/sessions/{session_id}/rename",
         configuration.base_path,
-        session_id = crate::generated::apis::urlencode(p_path_session_id)
+        session_id = crate::apis::urlencode(p_path_session_id)
     );
     let mut req_builder = configuration
         .client
@@ -840,7 +840,7 @@ pub fn update_session_request_builder(
     let uri_str = format!(
         "{}/sessions/{session_id}",
         configuration.base_path,
-        session_id = crate::generated::apis::urlencode(p_path_session_id)
+        session_id = crate::apis::urlencode(p_path_session_id)
     );
     let mut req_builder = configuration
         .client
