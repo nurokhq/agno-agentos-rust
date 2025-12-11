@@ -110,11 +110,11 @@ pub enum UpdateMemoryError {
 }
 
 /// Create a new user memory with content and associated topics. Memories are used to store contextual information for users across conversations.
-pub async fn create_memory(
+pub fn create_memory_request_builder(
     configuration: &configuration::Configuration,
     user_memory_create_schema: models::UserMemoryCreateSchema,
     db_id: Option<&str>,
-) -> Result<models::UserMemorySchema, Error<CreateMemoryError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_body_user_memory_create_schema = user_memory_create_schema;
     let p_query_db_id = db_id;
@@ -135,6 +135,22 @@ pub async fn create_memory(
     };
     req_builder = req_builder.json(&p_body_user_memory_create_schema);
 
+    Ok(req_builder)
+}
+
+pub async fn create_memory(
+    configuration: &configuration::Configuration,
+    user_memory_create_schema: models::UserMemoryCreateSchema,
+    db_id: Option<&str>,
+) -> Result<models::UserMemorySchema, Error<CreateMemoryError>> {
+    let req_builder =
+        create_memory_request_builder(configuration, user_memory_create_schema, db_id).map_err(
+            |e| match e {
+                Error::Serde(e) => Error::Serde(e),
+                Error::Io(e) => Error::Io(e),
+                _ => unreachable!(),
+            },
+        )?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -173,11 +189,11 @@ pub async fn create_memory(
 }
 
 /// Delete multiple user memories by their IDs in a single operation. This action cannot be undone and all specified memories will be permanently removed.
-pub async fn delete_memories(
+pub fn delete_memories_request_builder(
     configuration: &configuration::Configuration,
     delete_memories_request: models::DeleteMemoriesRequest,
     db_id: Option<&str>,
-) -> Result<(), Error<DeleteMemoriesError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_body_delete_memories_request = delete_memories_request;
     let p_query_db_id = db_id;
@@ -198,6 +214,22 @@ pub async fn delete_memories(
     };
     req_builder = req_builder.json(&p_body_delete_memories_request);
 
+    Ok(req_builder)
+}
+
+pub async fn delete_memories(
+    configuration: &configuration::Configuration,
+    delete_memories_request: models::DeleteMemoriesRequest,
+    db_id: Option<&str>,
+) -> Result<(), Error<DeleteMemoriesError>> {
+    let req_builder =
+        delete_memories_request_builder(configuration, delete_memories_request, db_id).map_err(
+            |e| match e {
+                Error::Serde(e) => Error::Serde(e),
+                Error::Io(e) => Error::Io(e),
+                _ => unreachable!(),
+            },
+        )?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -217,12 +249,12 @@ pub async fn delete_memories(
 }
 
 /// Permanently delete a specific user memory. This action cannot be undone.
-pub async fn delete_memory(
+pub fn delete_memory_request_builder(
     configuration: &configuration::Configuration,
     memory_id: &str,
     user_id: Option<&str>,
     db_id: Option<&str>,
-) -> Result<(), Error<DeleteMemoryError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_memory_id = memory_id;
     let p_query_user_id = user_id;
@@ -250,6 +282,21 @@ pub async fn delete_memory(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn delete_memory(
+    configuration: &configuration::Configuration,
+    memory_id: &str,
+    user_id: Option<&str>,
+    db_id: Option<&str>,
+) -> Result<(), Error<DeleteMemoryError>> {
+    let req_builder = delete_memory_request_builder(configuration, memory_id, user_id, db_id)
+        .map_err(|e| match e {
+            Error::Serde(e) => Error::Serde(e),
+            Error::Io(e) => Error::Io(e),
+            _ => unreachable!(),
+        })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -269,7 +316,7 @@ pub async fn delete_memory(
 }
 
 /// Retrieve paginated list of user memories with filtering and search capabilities. Filter by user, agent, team, topics, or search within memory content.
-pub async fn get_memories(
+pub fn get_memories_request_builder(
     configuration: &configuration::Configuration,
     user_id: Option<&str>,
     agent_id: Option<&str>,
@@ -281,7 +328,7 @@ pub async fn get_memories(
     sort_order: Option<models::SortOrder>,
     db_id: Option<&str>,
     topics: Option<Vec<String>>,
-) -> Result<models::PaginatedResponseUserMemorySchema, Error<GetMemoriesError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_query_user_id = user_id;
     let p_query_agent_id = agent_id;
@@ -350,6 +397,40 @@ pub async fn get_memories(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_memories(
+    configuration: &configuration::Configuration,
+    user_id: Option<&str>,
+    agent_id: Option<&str>,
+    team_id: Option<&str>,
+    search_content: Option<&str>,
+    limit: Option<i32>,
+    page: Option<i32>,
+    sort_by: Option<&str>,
+    sort_order: Option<models::SortOrder>,
+    db_id: Option<&str>,
+    topics: Option<Vec<String>>,
+) -> Result<models::PaginatedResponseUserMemorySchema, Error<GetMemoriesError>> {
+    let req_builder = get_memories_request_builder(
+        configuration,
+        user_id,
+        agent_id,
+        team_id,
+        search_content,
+        limit,
+        page,
+        sort_by,
+        sort_order,
+        db_id,
+        topics,
+    )
+    .map_err(|e| match e {
+        Error::Serde(e) => Error::Serde(e),
+        Error::Io(e) => Error::Io(e),
+        _ => unreachable!(),
+    })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -388,12 +469,12 @@ pub async fn get_memories(
 }
 
 /// Retrieve detailed information about a specific user memory by its ID.
-pub async fn get_memory(
+pub fn get_memory_request_builder(
     configuration: &configuration::Configuration,
     memory_id: &str,
     user_id: Option<&str>,
     db_id: Option<&str>,
-) -> Result<models::UserMemorySchema, Error<GetMemoryError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_memory_id = memory_id;
     let p_query_user_id = user_id;
@@ -419,6 +500,21 @@ pub async fn get_memory(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_memory(
+    configuration: &configuration::Configuration,
+    memory_id: &str,
+    user_id: Option<&str>,
+    db_id: Option<&str>,
+) -> Result<models::UserMemorySchema, Error<GetMemoryError>> {
+    let req_builder = get_memory_request_builder(configuration, memory_id, user_id, db_id)
+        .map_err(|e| match e {
+            Error::Serde(e) => Error::Serde(e),
+            Error::Io(e) => Error::Io(e),
+            _ => unreachable!(),
+        })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -457,10 +553,10 @@ pub async fn get_memory(
 }
 
 /// Retrieve all unique topics associated with memories in the system. Useful for filtering and categorizing memories by topic.
-pub async fn get_memory_topics(
+pub fn get_memory_topics_request_builder(
     configuration: &configuration::Configuration,
     db_id: Option<&str>,
-) -> Result<Vec<String>, Error<GetMemoryTopicsError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_query_db_id = db_id;
 
@@ -477,6 +573,19 @@ pub async fn get_memory_topics(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_memory_topics(
+    configuration: &configuration::Configuration,
+    db_id: Option<&str>,
+) -> Result<Vec<String>, Error<GetMemoryTopicsError>> {
+    let req_builder =
+        get_memory_topics_request_builder(configuration, db_id).map_err(|e| match e {
+            Error::Serde(e) => Error::Serde(e),
+            Error::Io(e) => Error::Io(e),
+            _ => unreachable!(),
+        })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -515,12 +624,12 @@ pub async fn get_memory_topics(
 }
 
 /// Retrieve paginated statistics about memory usage by user. Provides insights into user engagement and memory distribution across users.
-pub async fn get_user_memory_stats(
+pub fn get_user_memory_stats_request_builder(
     configuration: &configuration::Configuration,
     limit: Option<i32>,
     page: Option<i32>,
     db_id: Option<&str>,
-) -> Result<models::PaginatedResponseUserStatsSchema, Error<GetUserMemoryStatsError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_query_limit = limit;
     let p_query_page = page;
@@ -545,6 +654,21 @@ pub async fn get_user_memory_stats(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_user_memory_stats(
+    configuration: &configuration::Configuration,
+    limit: Option<i32>,
+    page: Option<i32>,
+    db_id: Option<&str>,
+) -> Result<models::PaginatedResponseUserStatsSchema, Error<GetUserMemoryStatsError>> {
+    let req_builder = get_user_memory_stats_request_builder(configuration, limit, page, db_id)
+        .map_err(|e| match e {
+            Error::Serde(e) => Error::Serde(e),
+            Error::Io(e) => Error::Io(e),
+            _ => unreachable!(),
+        })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -583,12 +707,12 @@ pub async fn get_user_memory_stats(
 }
 
 /// Update an existing user memory's content and topics. Replaces the entire memory content and topic list with the provided values.
-pub async fn update_memory(
+pub fn update_memory_request_builder(
     configuration: &configuration::Configuration,
     memory_id: &str,
     user_memory_create_schema: models::UserMemoryCreateSchema,
     db_id: Option<&str>,
-) -> Result<models::UserMemorySchema, Error<UpdateMemoryError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_memory_id = memory_id;
     let p_body_user_memory_create_schema = user_memory_create_schema;
@@ -614,6 +738,22 @@ pub async fn update_memory(
     };
     req_builder = req_builder.json(&p_body_user_memory_create_schema);
 
+    Ok(req_builder)
+}
+
+pub async fn update_memory(
+    configuration: &configuration::Configuration,
+    memory_id: &str,
+    user_memory_create_schema: models::UserMemoryCreateSchema,
+    db_id: Option<&str>,
+) -> Result<models::UserMemorySchema, Error<UpdateMemoryError>> {
+    let req_builder =
+        update_memory_request_builder(configuration, memory_id, user_memory_create_schema, db_id)
+            .map_err(|e| match e {
+            Error::Serde(e) => Error::Serde(e),
+            Error::Io(e) => Error::Io(e),
+            _ => unreachable!(),
+        })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 

@@ -62,11 +62,11 @@ pub enum GetTeamsError {
 }
 
 /// Cancel a currently executing team run. This will attempt to stop the team's execution gracefully.  **Note:** Cancellation may not be immediate for all operations.
-pub async fn cancel_team_run(
+pub fn cancel_team_run_request_builder(
     configuration: &configuration::Configuration,
     team_id: &str,
     run_id: &str,
-) -> Result<serde_json::Value, Error<CancelTeamRunError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_team_id = team_id;
     let p_path_run_id = run_id;
@@ -88,6 +88,20 @@ pub async fn cancel_team_run(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn cancel_team_run(
+    configuration: &configuration::Configuration,
+    team_id: &str,
+    run_id: &str,
+) -> Result<serde_json::Value, Error<CancelTeamRunError>> {
+    let req_builder =
+        cancel_team_run_request_builder(configuration, team_id, run_id).map_err(|e| match e {
+            Error::Serde(e) => Error::Serde(e),
+            Error::Io(e) => Error::Io(e),
+            _ => unreachable!(),
+        })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -126,7 +140,7 @@ pub async fn cancel_team_run(
 }
 
 /// Execute a team collaboration with multiple agents working together on a task.  **Features:** - Text message input with optional session management - Multi-media support: images (PNG, JPEG, WebP), audio (WAV, MP3), video (MP4, WebM, etc.) - Document processing: PDF, CSV, DOCX, TXT, JSON - Real-time streaming responses with Server-Sent Events (SSE) - User and session context preservation  **Streaming Response:** When `stream=true`, returns SSE events with `event` and `data` fields.
-pub async fn create_team_run(
+pub fn create_team_run_request_builder(
     configuration: &configuration::Configuration,
     team_id: &str,
     message: &str,
@@ -135,7 +149,7 @@ pub async fn create_team_run(
     session_id: Option<&str>,
     user_id: Option<&str>,
     files: Option<Vec<std::path::PathBuf>>,
-) -> Result<serde_json::Value, Error<CreateTeamRunError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_team_id = team_id;
     let p_form_message = message;
@@ -177,6 +191,34 @@ pub async fn create_team_run(
     // TODO: support file upload for 'files' parameter
     req_builder = req_builder.multipart(multipart_form);
 
+    Ok(req_builder)
+}
+
+pub async fn create_team_run(
+    configuration: &configuration::Configuration,
+    team_id: &str,
+    message: &str,
+    stream: Option<bool>,
+    monitor: Option<bool>,
+    session_id: Option<&str>,
+    user_id: Option<&str>,
+    files: Option<Vec<std::path::PathBuf>>,
+) -> Result<serde_json::Value, Error<CreateTeamRunError>> {
+    let req_builder = create_team_run_request_builder(
+        configuration,
+        team_id,
+        message,
+        stream,
+        monitor,
+        session_id,
+        user_id,
+        files,
+    )
+    .map_err(|e| match e {
+        Error::Serde(e) => Error::Serde(e),
+        Error::Io(e) => Error::Io(e),
+        _ => unreachable!(),
+    })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -215,10 +257,10 @@ pub async fn create_team_run(
 }
 
 /// Retrieve detailed configuration and member information for a specific team.
-pub async fn get_team(
+pub fn get_team_request_builder(
     configuration: &configuration::Configuration,
     team_id: &str,
-) -> Result<models::TeamResponse, Error<GetTeamError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_team_id = team_id;
 
@@ -236,6 +278,18 @@ pub async fn get_team(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_team(
+    configuration: &configuration::Configuration,
+    team_id: &str,
+) -> Result<models::TeamResponse, Error<GetTeamError>> {
+    let req_builder = get_team_request_builder(configuration, team_id).map_err(|e| match e {
+        Error::Serde(e) => Error::Serde(e),
+        Error::Io(e) => Error::Io(e),
+        _ => unreachable!(),
+    })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -274,9 +328,9 @@ pub async fn get_team(
 }
 
 /// Retrieve a comprehensive list of all teams configured in this OS instance.  **Returns team information including:** - Team metadata (ID, name, description, execution mode) - Model configuration for team coordination - Team member roster with roles and capabilities - Knowledge sharing and memory configurations
-pub async fn get_teams(
+pub fn get_teams_request_builder(
     configuration: &configuration::Configuration,
-) -> Result<Vec<models::TeamResponse>, Error<GetTeamsError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     let uri_str = format!("{}/teams", configuration.base_path);
     let mut req_builder = configuration.client.request(reqwest::Method::GET, &uri_str);
 
@@ -287,6 +341,17 @@ pub async fn get_teams(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_teams(
+    configuration: &configuration::Configuration,
+) -> Result<Vec<models::TeamResponse>, Error<GetTeamsError>> {
+    let req_builder = get_teams_request_builder(configuration).map_err(|e| match e {
+        Error::Serde(e) => Error::Serde(e),
+        Error::Io(e) => Error::Io(e),
+        _ => unreachable!(),
+    })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 

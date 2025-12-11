@@ -74,11 +74,11 @@ pub enum GetAgentsError {
 }
 
 /// Cancel a currently executing agent run. This will attempt to stop the agent's execution gracefully.  **Note:** Cancellation may not be immediate for all operations.
-pub async fn cancel_agent_run(
+pub fn cancel_agent_run_request_builder(
     configuration: &configuration::Configuration,
     agent_id: &str,
     run_id: &str,
-) -> Result<serde_json::Value, Error<CancelAgentRunError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_agent_id = agent_id;
     let p_path_run_id = run_id;
@@ -100,6 +100,20 @@ pub async fn cancel_agent_run(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn cancel_agent_run(
+    configuration: &configuration::Configuration,
+    agent_id: &str,
+    run_id: &str,
+) -> Result<serde_json::Value, Error<CancelAgentRunError>> {
+    let req_builder =
+        cancel_agent_run_request_builder(configuration, agent_id, run_id).map_err(|e| match e {
+            Error::Serde(e) => Error::Serde(e),
+            Error::Io(e) => Error::Io(e),
+            _ => unreachable!(),
+        })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -138,7 +152,7 @@ pub async fn cancel_agent_run(
 }
 
 /// Continue a paused or incomplete agent run with updated tool results.  **Use Cases:** - Resume execution after tool approval/rejection - Provide manual tool execution results  **Tools Parameter:** JSON string containing array of tool execution objects with results.
-pub async fn continue_agent_run(
+pub fn continue_agent_run_request_builder(
     configuration: &configuration::Configuration,
     agent_id: &str,
     run_id: &str,
@@ -146,7 +160,7 @@ pub async fn continue_agent_run(
     session_id: Option<&str>,
     user_id: Option<&str>,
     stream: Option<bool>,
-) -> Result<serde_json::Value, Error<ContinueAgentRunError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_agent_id = agent_id;
     let p_path_run_id = run_id;
@@ -184,6 +198,32 @@ pub async fn continue_agent_run(
     }
     req_builder = req_builder.form(&multipart_form_params);
 
+    Ok(req_builder)
+}
+
+pub async fn continue_agent_run(
+    configuration: &configuration::Configuration,
+    agent_id: &str,
+    run_id: &str,
+    tools: &str,
+    session_id: Option<&str>,
+    user_id: Option<&str>,
+    stream: Option<bool>,
+) -> Result<serde_json::Value, Error<ContinueAgentRunError>> {
+    let req_builder = continue_agent_run_request_builder(
+        configuration,
+        agent_id,
+        run_id,
+        tools,
+        session_id,
+        user_id,
+        stream,
+    )
+    .map_err(|e| match e {
+        Error::Serde(e) => Error::Serde(e),
+        Error::Io(e) => Error::Io(e),
+        _ => unreachable!(),
+    })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -222,7 +262,7 @@ pub async fn continue_agent_run(
 }
 
 /// Execute an agent with a message and optional media files. Supports both streaming and non-streaming responses.  **Features:** - Text message input with optional session management - Multi-media support: images (PNG, JPEG, WebP), audio (WAV, MP3), video (MP4, WebM, etc.) - Document processing: PDF, CSV, DOCX, TXT, JSON - Real-time streaming responses with Server-Sent Events (SSE) - User and session context preservation  **Streaming Response:** When `stream=true`, returns SSE events with `event` and `data` fields.
-pub async fn create_agent_run(
+pub fn create_agent_run_request_builder(
     configuration: &configuration::Configuration,
     agent_id: &str,
     message: &str,
@@ -230,7 +270,7 @@ pub async fn create_agent_run(
     session_id: Option<&str>,
     user_id: Option<&str>,
     files: Option<Vec<std::path::PathBuf>>,
-) -> Result<serde_json::Value, Error<CreateAgentRunError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_agent_id = agent_id;
     let p_form_message = message;
@@ -268,6 +308,32 @@ pub async fn create_agent_run(
     // TODO: support file upload for 'files' parameter
     req_builder = req_builder.multipart(multipart_form);
 
+    Ok(req_builder)
+}
+
+pub async fn create_agent_run(
+    configuration: &configuration::Configuration,
+    agent_id: &str,
+    message: &str,
+    stream: Option<bool>,
+    session_id: Option<&str>,
+    user_id: Option<&str>,
+    files: Option<Vec<std::path::PathBuf>>,
+) -> Result<serde_json::Value, Error<CreateAgentRunError>> {
+    let req_builder = create_agent_run_request_builder(
+        configuration,
+        agent_id,
+        message,
+        stream,
+        session_id,
+        user_id,
+        files,
+    )
+    .map_err(|e| match e {
+        Error::Serde(e) => Error::Serde(e),
+        Error::Io(e) => Error::Io(e),
+        _ => unreachable!(),
+    })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -306,10 +372,10 @@ pub async fn create_agent_run(
 }
 
 /// Retrieve detailed configuration and capabilities of a specific agent.  **Returns comprehensive agent information including:** - Model configuration and provider details - Complete tool inventory and configurations - Session management settings - Knowledge base and memory configurations - Reasoning capabilities and settings - System prompts and response formatting options
-pub async fn get_agent(
+pub fn get_agent_request_builder(
     configuration: &configuration::Configuration,
     agent_id: &str,
-) -> Result<models::AgentResponse, Error<GetAgentError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     // add a prefix to parameters to efficiently prevent name collisions
     let p_path_agent_id = agent_id;
 
@@ -327,6 +393,18 @@ pub async fn get_agent(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_agent(
+    configuration: &configuration::Configuration,
+    agent_id: &str,
+) -> Result<models::AgentResponse, Error<GetAgentError>> {
+    let req_builder = get_agent_request_builder(configuration, agent_id).map_err(|e| match e {
+        Error::Serde(e) => Error::Serde(e),
+        Error::Io(e) => Error::Io(e),
+        _ => unreachable!(),
+    })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -365,9 +443,9 @@ pub async fn get_agent(
 }
 
 /// Retrieve a comprehensive list of all agents configured in this OS instance.  **Returns:** - Agent metadata (ID, name, description) - Model configuration and capabilities - Available tools and their configurations - Session, knowledge, memory, and reasoning settings - Only meaningful (non-default) configurations are included
-pub async fn get_agents(
+pub fn get_agents_request_builder(
     configuration: &configuration::Configuration,
-) -> Result<Vec<models::AgentResponse>, Error<GetAgentsError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     let uri_str = format!("{}/agents", configuration.base_path);
     let mut req_builder = configuration.client.request(reqwest::Method::GET, &uri_str);
 
@@ -378,6 +456,17 @@ pub async fn get_agents(
         req_builder = req_builder.bearer_auth(token.to_owned());
     };
 
+    Ok(req_builder)
+}
+
+pub async fn get_agents(
+    configuration: &configuration::Configuration,
+) -> Result<Vec<models::AgentResponse>, Error<GetAgentsError>> {
+    let req_builder = get_agents_request_builder(configuration).map_err(|e| match e {
+        Error::Serde(e) => Error::Serde(e),
+        Error::Io(e) => Error::Io(e),
+        _ => unreachable!(),
+    })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 

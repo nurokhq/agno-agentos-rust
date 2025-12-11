@@ -21,9 +21,9 @@ pub enum HealthCheckError {
 }
 
 /// Check the health status of the AgentOS API. Returns a simple status indicator.
-pub async fn health_check(
+pub fn health_check_request_builder(
     configuration: &configuration::Configuration,
-) -> Result<models::HealthResponse, Error<HealthCheckError>> {
+) -> Result<reqwest::RequestBuilder, Error<serde_json::Error>> {
     let uri_str = format!("{}/health", configuration.base_path);
     let mut req_builder = configuration.client.request(reqwest::Method::GET, &uri_str);
 
@@ -31,6 +31,17 @@ pub async fn health_check(
         req_builder = req_builder.header(reqwest::header::USER_AGENT, user_agent.clone());
     }
 
+    Ok(req_builder)
+}
+
+pub async fn health_check(
+    configuration: &configuration::Configuration,
+) -> Result<models::HealthResponse, Error<HealthCheckError>> {
+    let req_builder = health_check_request_builder(configuration).map_err(|e| match e {
+        Error::Serde(e) => Error::Serde(e),
+        Error::Io(e) => Error::Io(e),
+        _ => unreachable!(),
+    })?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
