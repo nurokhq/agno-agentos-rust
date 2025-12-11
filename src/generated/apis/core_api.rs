@@ -74,15 +74,13 @@ pub async fn get_config(
         let content = resp.text().await?;
         match content_type {
             ContentType::Json => serde_json::from_str(&content).map_err(Error::from),
-            ContentType::Text => {
-                return Err(Error::from(serde_json::Error::custom(
-                    "Received `text/plain` content type response that cannot be converted to `models::ConfigResponse`",
-                )));
-            }
+            ContentType::Text => Err(Error::from(serde_json::Error::custom(
+                "Received `text/plain` content type response that cannot be converted to `models::ConfigResponse`",
+            ))),
             ContentType::Unsupported(unknown_type) => {
-                return Err(Error::from(serde_json::Error::custom(format!(
+                Err(Error::from(serde_json::Error::custom(format!(
                     "Received `{unknown_type}` content type response that cannot be converted to `models::ConfigResponse`"
-                ))));
+                ))))
             }
         }
     } else {
@@ -133,15 +131,13 @@ pub async fn get_models(
         let content = resp.text().await?;
         match content_type {
             ContentType::Json => serde_json::from_str(&content).map_err(Error::from),
-            ContentType::Text => {
-                return Err(Error::from(serde_json::Error::custom(
-                    "Received `text/plain` content type response that cannot be converted to `Vec&lt;models::Model&gt;`",
-                )));
-            }
+            ContentType::Text => Err(Error::from(serde_json::Error::custom(
+                "Received `text/plain` content type response that cannot be converted to `Vec&lt;models::Model&gt;`",
+            ))),
             ContentType::Unsupported(unknown_type) => {
-                return Err(Error::from(serde_json::Error::custom(format!(
+                Err(Error::from(serde_json::Error::custom(format!(
                     "Received `{unknown_type}` content type response that cannot be converted to `Vec&lt;models::Model&gt;`"
-                ))));
+                ))))
             }
         }
     } else {

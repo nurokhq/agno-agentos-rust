@@ -169,15 +169,13 @@ pub async fn delete_all_content(
         let content = resp.text().await?;
         match content_type {
             ContentType::Json => serde_json::from_str(&content).map_err(Error::from),
-            ContentType::Text => {
-                return Err(Error::from(serde_json::Error::custom(
-                    "Received `text/plain` content type response that cannot be converted to `serde_json::Value`",
-                )));
-            }
+            ContentType::Text => Err(Error::from(serde_json::Error::custom(
+                "Received `text/plain` content type response that cannot be converted to `serde_json::Value`",
+            ))),
             ContentType::Unsupported(unknown_type) => {
-                return Err(Error::from(serde_json::Error::custom(format!(
+                Err(Error::from(serde_json::Error::custom(format!(
                     "Received `{unknown_type}` content type response that cannot be converted to `serde_json::Value`"
-                ))));
+                ))))
             }
         }
     } else {
@@ -245,15 +243,13 @@ pub async fn delete_content_by_id(
         let content = resp.text().await?;
         match content_type {
             ContentType::Json => serde_json::from_str(&content).map_err(Error::from),
-            ContentType::Text => {
-                return Err(Error::from(serde_json::Error::custom(
-                    "Received `text/plain` content type response that cannot be converted to `models::ContentResponseSchema`",
-                )));
-            }
+            ContentType::Text => Err(Error::from(serde_json::Error::custom(
+                "Received `text/plain` content type response that cannot be converted to `models::ContentResponseSchema`",
+            ))),
             ContentType::Unsupported(unknown_type) => {
-                return Err(Error::from(serde_json::Error::custom(format!(
+                Err(Error::from(serde_json::Error::custom(format!(
                     "Received `{unknown_type}` content type response that cannot be converted to `models::ContentResponseSchema`"
-                ))));
+                ))))
             }
         }
     } else {
@@ -337,15 +333,13 @@ pub async fn get_content(
         let content = resp.text().await?;
         match content_type {
             ContentType::Json => serde_json::from_str(&content).map_err(Error::from),
-            ContentType::Text => {
-                return Err(Error::from(serde_json::Error::custom(
-                    "Received `text/plain` content type response that cannot be converted to `models::PaginatedResponseContentResponseSchema`",
-                )));
-            }
+            ContentType::Text => Err(Error::from(serde_json::Error::custom(
+                "Received `text/plain` content type response that cannot be converted to `models::PaginatedResponseContentResponseSchema`",
+            ))),
             ContentType::Unsupported(unknown_type) => {
-                return Err(Error::from(serde_json::Error::custom(format!(
+                Err(Error::from(serde_json::Error::custom(format!(
                     "Received `{unknown_type}` content type response that cannot be converted to `models::PaginatedResponseContentResponseSchema`"
-                ))));
+                ))))
             }
         }
     } else {
@@ -411,15 +405,13 @@ pub async fn get_content_by_id(
         let content = resp.text().await?;
         match content_type {
             ContentType::Json => serde_json::from_str(&content).map_err(Error::from),
-            ContentType::Text => {
-                return Err(Error::from(serde_json::Error::custom(
-                    "Received `text/plain` content type response that cannot be converted to `models::ContentResponseSchema`",
-                )));
-            }
+            ContentType::Text => Err(Error::from(serde_json::Error::custom(
+                "Received `text/plain` content type response that cannot be converted to `models::ContentResponseSchema`",
+            ))),
             ContentType::Unsupported(unknown_type) => {
-                return Err(Error::from(serde_json::Error::custom(format!(
+                Err(Error::from(serde_json::Error::custom(format!(
                     "Received `{unknown_type}` content type response that cannot be converted to `models::ContentResponseSchema`"
-                ))));
+                ))))
             }
         }
     } else {
@@ -485,15 +477,13 @@ pub async fn get_content_status(
         let content = resp.text().await?;
         match content_type {
             ContentType::Json => serde_json::from_str(&content).map_err(Error::from),
-            ContentType::Text => {
-                return Err(Error::from(serde_json::Error::custom(
-                    "Received `text/plain` content type response that cannot be converted to `models::ContentStatusResponse`",
-                )));
-            }
+            ContentType::Text => Err(Error::from(serde_json::Error::custom(
+                "Received `text/plain` content type response that cannot be converted to `models::ContentStatusResponse`",
+            ))),
             ContentType::Unsupported(unknown_type) => {
-                return Err(Error::from(serde_json::Error::custom(format!(
+                Err(Error::from(serde_json::Error::custom(format!(
                     "Received `{unknown_type}` content type response that cannot be converted to `models::ContentStatusResponse`"
-                ))));
+                ))))
             }
         }
     } else {
@@ -552,15 +542,13 @@ pub async fn get_knowledge_config(
         let content = resp.text().await?;
         match content_type {
             ContentType::Json => serde_json::from_str(&content).map_err(Error::from),
-            ContentType::Text => {
-                return Err(Error::from(serde_json::Error::custom(
-                    "Received `text/plain` content type response that cannot be converted to `models::ConfigResponseSchema`",
-                )));
-            }
+            ContentType::Text => Err(Error::from(serde_json::Error::custom(
+                "Received `text/plain` content type response that cannot be converted to `models::ConfigResponseSchema`",
+            ))),
             ContentType::Unsupported(unknown_type) => {
-                return Err(Error::from(serde_json::Error::custom(format!(
+                Err(Error::from(serde_json::Error::custom(format!(
                     "Received `{unknown_type}` content type response that cannot be converted to `models::ConfigResponseSchema`"
-                ))));
+                ))))
             }
         }
     } else {
@@ -619,15 +607,13 @@ pub async fn search_knowledge(
         let content = resp.text().await?;
         match content_type {
             ContentType::Json => serde_json::from_str(&content).map_err(Error::from),
-            ContentType::Text => {
-                return Err(Error::from(serde_json::Error::custom(
-                    "Received `text/plain` content type response that cannot be converted to `models::PaginatedResponseVectorSearchResult`",
-                )));
-            }
+            ContentType::Text => Err(Error::from(serde_json::Error::custom(
+                "Received `text/plain` content type response that cannot be converted to `models::PaginatedResponseVectorSearchResult`",
+            ))),
             ContentType::Unsupported(unknown_type) => {
-                return Err(Error::from(serde_json::Error::custom(format!(
+                Err(Error::from(serde_json::Error::custom(format!(
                     "Received `{unknown_type}` content type response that cannot be converted to `models::PaginatedResponseVectorSearchResult`"
-                ))));
+                ))))
             }
         }
     } else {
@@ -729,15 +715,13 @@ pub async fn update_content(
         let content = resp.text().await?;
         match content_type {
             ContentType::Json => serde_json::from_str(&content).map_err(Error::from),
-            ContentType::Text => {
-                return Err(Error::from(serde_json::Error::custom(
-                    "Received `text/plain` content type response that cannot be converted to `models::ContentResponseSchema`",
-                )));
-            }
+            ContentType::Text => Err(Error::from(serde_json::Error::custom(
+                "Received `text/plain` content type response that cannot be converted to `models::ContentResponseSchema`",
+            ))),
             ContentType::Unsupported(unknown_type) => {
-                return Err(Error::from(serde_json::Error::custom(format!(
+                Err(Error::from(serde_json::Error::custom(format!(
                     "Received `{unknown_type}` content type response that cannot be converted to `models::ContentResponseSchema`"
-                ))));
+                ))))
             }
         }
     } else {
@@ -802,7 +786,7 @@ pub fn upload_content_request_builder(
     if let Some(param_value) = p_form_metadata {
         multipart_form = multipart_form.text("metadata", param_value.to_string());
     }
-    if let Some(param_value) = p_form_file {
+    if let Some(ref param_value) = p_form_file {
         let part = Part::bytes(param_value.clone()).file_name("file");
         multipart_form = multipart_form.part("file", part);
     }
@@ -860,15 +844,13 @@ pub async fn upload_content(
         let content = resp.text().await?;
         match content_type {
             ContentType::Json => serde_json::from_str(&content).map_err(Error::from),
-            ContentType::Text => {
-                return Err(Error::from(serde_json::Error::custom(
-                    "Received `text/plain` content type response that cannot be converted to `models::ContentResponseSchema`",
-                )));
-            }
+            ContentType::Text => Err(Error::from(serde_json::Error::custom(
+                "Received `text/plain` content type response that cannot be converted to `models::ContentResponseSchema`",
+            ))),
             ContentType::Unsupported(unknown_type) => {
-                return Err(Error::from(serde_json::Error::custom(format!(
+                Err(Error::from(serde_json::Error::custom(format!(
                     "Received `{unknown_type}` content type response that cannot be converted to `models::ContentResponseSchema`"
-                ))));
+                ))))
             }
         }
     } else {

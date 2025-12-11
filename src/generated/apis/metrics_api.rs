@@ -94,15 +94,13 @@ pub async fn get_metrics(
         let content = resp.text().await?;
         match content_type {
             ContentType::Json => serde_json::from_str(&content).map_err(Error::from),
-            ContentType::Text => {
-                return Err(Error::from(serde_json::Error::custom(
-                    "Received `text/plain` content type response that cannot be converted to `models::MetricsResponse`",
-                )));
-            }
+            ContentType::Text => Err(Error::from(serde_json::Error::custom(
+                "Received `text/plain` content type response that cannot be converted to `models::MetricsResponse`",
+            ))),
             ContentType::Unsupported(unknown_type) => {
-                return Err(Error::from(serde_json::Error::custom(format!(
+                Err(Error::from(serde_json::Error::custom(format!(
                     "Received `{unknown_type}` content type response that cannot be converted to `models::MetricsResponse`"
-                ))));
+                ))))
             }
         }
     } else {
@@ -163,15 +161,13 @@ pub async fn refresh_metrics(
         let content = resp.text().await?;
         match content_type {
             ContentType::Json => serde_json::from_str(&content).map_err(Error::from),
-            ContentType::Text => {
-                return Err(Error::from(serde_json::Error::custom(
-                    "Received `text/plain` content type response that cannot be converted to `Vec&lt;models::DayAggregatedMetrics&gt;`",
-                )));
-            }
+            ContentType::Text => Err(Error::from(serde_json::Error::custom(
+                "Received `text/plain` content type response that cannot be converted to `Vec&lt;models::DayAggregatedMetrics&gt;`",
+            ))),
             ContentType::Unsupported(unknown_type) => {
-                return Err(Error::from(serde_json::Error::custom(format!(
+                Err(Error::from(serde_json::Error::custom(format!(
                     "Received `{unknown_type}` content type response that cannot be converted to `Vec&lt;models::DayAggregatedMetrics&gt;`"
-                ))));
+                ))))
             }
         }
     } else {

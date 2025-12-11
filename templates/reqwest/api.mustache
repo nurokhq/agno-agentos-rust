@@ -203,8 +203,8 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
     if let Some(ref param_value) = {{{vendorExtensions.x-rust-param-identifier}}} {
         {{#isArray}}
         req_builder = match "{{collectionFormat}}" {
-            "multi" => req_builder.query(&param_value.into_iter().map(|p| ("{{{baseName}}}".to_owned(), p.to_string())).collect::<Vec<(std::string::String, std::string::String)>>()),
-            _ => req_builder.query(&[("{{{baseName}}}", &param_value.into_iter().map(|p| p.to_string()).collect::<Vec<String>>().join(",").to_string())]),
+            "multi" => req_builder.query(&param_value.iter().map(|p| ("{{{baseName}}}".to_owned(), p.to_string())).collect::<Vec<(std::string::String, std::string::String)>>()),
+            _ => req_builder.query(&[("{{{baseName}}}", &param_value.iter().map(|p| p.to_string()).collect::<Vec<String>>().join(",").to_string())]),
         };
         {{/isArray}}
         {{^isArray}}
@@ -433,7 +433,7 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
     {{/isNullable}}
     {{/required}}
     {{^required}}
-    if let Some(param_value) = {{{vendorExtensions.x-rust-param-identifier}}} {
+        if let Some(ref param_value) = {{{vendorExtensions.x-rust-param-identifier}}} {
         {{#isArray}}
         for file_data in param_value {
             let part = Part::bytes(file_data.clone()).file_name("{{{baseName}}}");
@@ -625,12 +625,12 @@ pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: 
         match content_type {
             ContentType::Json => serde_json::from_str(&content).map_err(Error::from),
             {{#vendorExtensions.x-supports-plain-text}}
-            ContentType::Text => return Ok(content),
+            ContentType::Text => Ok(content),
             {{/vendorExtensions.x-supports-plain-text}}
             {{^vendorExtensions.x-supports-plain-text}}
-            ContentType::Text => return Err(Error::from(serde_json::Error::custom("Received `text/plain` content type response that cannot be converted to `{{returnType}}`"))),
+            ContentType::Text => Err(Error::from(serde_json::Error::custom("Received `text/plain` content type response that cannot be converted to `{{returnType}}`"))),
             {{/vendorExtensions.x-supports-plain-text}}
-            ContentType::Unsupported(unknown_type) => return Err(Error::from(serde_json::Error::custom(format!("Received `{unknown_type}` content type response that cannot be converted to `{{returnType}}`")))),
+            ContentType::Unsupported(unknown_type) => Err(Error::from(serde_json::Error::custom(format!("Received `{unknown_type}` content type response that cannot be converted to `{{returnType}}`")))),
         }
         {{/returnType}}
         {{/isResponseFile}}

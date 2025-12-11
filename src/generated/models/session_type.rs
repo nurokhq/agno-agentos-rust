@@ -11,7 +11,6 @@
 use crate::models;
 use serde::{Deserialize, Serialize};
 
-///
 #[derive(
     Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize,
 )]
