@@ -127,6 +127,14 @@ impl From<&str> for ContentType {
     }
 }
 
+/// Represents an uploadable file with metadata for multipart forms.
+#[derive(Debug, Clone)]
+pub struct UploadFile {
+    pub name: String,
+    pub content_type: String,
+    pub content: Vec<u8>,
+}
+
 pub mod agents_api;
 pub mod core_api;
 pub mod evals_api;

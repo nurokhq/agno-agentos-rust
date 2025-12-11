@@ -180,6 +180,14 @@ impl From<&str> for ContentType {
     }
 }
 
+/// Represents an uploadable file with metadata for multipart forms.
+#[derive(Debug, Clone)]
+pub struct UploadFile {
+    pub name: String,
+    pub content_type: String,
+    pub content: Vec<u8>,
+}
+
 {{#apiInfo}}
 {{#apis}}
 pub mod {{{classFilename}}};

@@ -3,7 +3,7 @@
 use reqwest;
 use serde::{Deserialize, Serialize, de::Error as _};
 use crate::{apis::ResponseContent, models};
-use super::{Error, configuration, ContentType};
+use super::{ContentType, Error, UploadFile, configuration};
 {{#operations}}
 {{#operation}}
 {{#vendorExtensions.useAsyncFileStream}}
@@ -35,8 +35,8 @@ pub struct {{{operationIdCamelCase}}}Params {
     pub {{{paramName}}}: {{!
     ### Option Start
     }}{{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{!
-    ### File types - use Vec<u8> for flexibility (can be created from BufReader, file, etc.)
-    }}{{#isFile}}{{#isArray}}Vec<{{/isArray}}Vec<u8>{{#isArray}}>{{/isArray}}{{/isFile}}{{!
+    ### File types - include metadata for multipart uploads
+    }}{{#isFile}}{{#isArray}}Vec<{{/isArray}}UploadFile{{#isArray}}>{{/isArray}}{{/isFile}}{{!
     ### &str and Vec<&str>
     }}{{^isFile}}{{^isUuid}}{{#isString}}{{#isArray}}Vec<{{/isArray}}String{{#isArray}}>{{/isArray}}{{/isString}}{{/isUuid}}{{/isFile}}{{!
     ### UUIDs
@@ -119,8 +119,8 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
 pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}}{{/bodyParams}}{{/hasBodyParam}}{{#hasAuthMethods}}{{#authMethods}}{{#supportTokenSource}}async {{/supportTokenSource}}{{/authMethods}}{{/hasAuthMethods}}{{/supportAsync}}fn {{{operationId}}}_request_builder(configuration: &configuration::Configuration, {{#allParams}}{{{paramName}}}: {{!
 ### Option Start
 }}{{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{!
-### File types - use Vec<u8> for flexibility (can be created from BufReader, file, etc.)
-}}{{#isFile}}{{#isArray}}Vec<{{/isArray}}Vec<u8>{{#isArray}}>{{/isArray}}{{/isFile}}{{!
+### File types - include metadata for multipart uploads
+}}{{#isFile}}{{#isArray}}Vec<{{/isArray}}UploadFile{{#isArray}}>{{/isArray}}{{/isFile}}{{!
 ### &str and Vec<&str>
 }}{{^isFile}}{{#isString}}{{#isArray}}Vec<{{/isArray}}{{^isUuid}}&str{{/isUuid}}{{#isArray}}>{{/isArray}}{{/isString}}{{/isFile}}{{!
 ### UUIDs
@@ -358,12 +358,18 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
     {{^isNullable}}
     {{#isArray}}
     for file_data in {{{vendorExtensions.x-rust-param-identifier}}} {
-        let part = Part::bytes(file_data).file_name("{{{baseName}}}");
+        let part = Part::bytes(file_data.content.clone())
+            .file_name(file_data.name.clone())
+            .mime_str(&file_data.content_type)
+            .map_err(serde_json::Error::custom)?;
         multipart_form = multipart_form.part("{{{baseName}}}", part);
     }
     {{/isArray}}
     {{^isArray}}
-    let part = Part::bytes({{{vendorExtensions.x-rust-param-identifier}}}.clone()).file_name("{{{baseName}}}");
+    let part = Part::bytes({{{vendorExtensions.x-rust-param-identifier}}}.content.clone())
+        .file_name({{{vendorExtensions.x-rust-param-identifier}}}.name.clone())
+        .mime_str(&{{{vendorExtensions.x-rust-param-identifier}}}.content_type)
+        .map_err(serde_json::Error::custom)?;
     multipart_form = multipart_form.part("{{{baseName}}}", part);
     {{/isArray}}
     {{/isNullable}}
@@ -372,12 +378,18 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
         Some(param_value) => {
             {{#isArray}}
             for file_data in param_value {
-                let part = Part::bytes(file_data).file_name("{{{baseName}}}");
+                let part = Part::bytes(file_data.content.clone())
+                    .file_name(file_data.name.clone())
+                    .mime_str(&file_data.content_type)
+                    .map_err(serde_json::Error::custom)?;
                 multipart_form = multipart_form.part("{{{baseName}}}", part);
             }
             {{/isArray}}
             {{^isArray}}
-            let part = Part::bytes(param_value.clone()).file_name("{{{baseName}}}");
+            let part = Part::bytes(param_value.content.clone())
+                .file_name(param_value.name.clone())
+                .mime_str(&param_value.content_type)
+                .map_err(serde_json::Error::custom)?;
             multipart_form = multipart_form.part("{{{baseName}}}", part);
             {{/isArray}}
         },
@@ -389,12 +401,18 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
     if let Some(param_value) = {{{vendorExtensions.x-rust-param-identifier}}} {
         {{#isArray}}
         for file_data in param_value {
-            let part = Part::bytes(file_data).file_name("{{{baseName}}}");
+            let part = Part::bytes(file_data.content.clone())
+                .file_name(file_data.name.clone())
+                .mime_str(&file_data.content_type)
+                .map_err(serde_json::Error::custom)?;
             multipart_form = multipart_form.part("{{{baseName}}}", part);
         }
         {{/isArray}}
         {{^isArray}}
-        let part = Part::bytes(param_value.clone()).file_name("{{{baseName}}}");
+        let part = Part::bytes(param_value.content.clone())
+            .file_name(param_value.name.clone())
+            .mime_str(&param_value.content_type)
+            .map_err(serde_json::Error::custom)?;
         multipart_form = multipart_form.part("{{{baseName}}}", part);
         {{/isArray}}
     }
@@ -405,12 +423,18 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
     {{^isNullable}}
     {{#isArray}}
     for file_data in {{{vendorExtensions.x-rust-param-identifier}}} {
-        let part = Part::bytes(file_data.clone()).file_name("{{{baseName}}}");
+        let part = Part::bytes(file_data.content.clone())
+            .file_name(file_data.name.clone())
+            .mime_str(&file_data.content_type)
+            .map_err(serde_json::Error::custom)?;
         multipart_form = multipart_form.part("{{{baseName}}}", part);
     }
     {{/isArray}}
     {{^isArray}}
-    let part = Part::bytes({{{vendorExtensions.x-rust-param-identifier}}}.clone()).file_name("{{{baseName}}}");
+    let part = Part::bytes({{{vendorExtensions.x-rust-param-identifier}}}.content.clone())
+        .file_name({{{vendorExtensions.x-rust-param-identifier}}}.name.clone())
+        .mime_str(&{{{vendorExtensions.x-rust-param-identifier}}}.content_type)
+        .map_err(serde_json::Error::custom)?;
     multipart_form = multipart_form.part("{{{baseName}}}", part);
     {{/isArray}}
     {{/isNullable}}
@@ -419,12 +443,18 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
         Some(param_value) => {
             {{#isArray}}
             for file_data in param_value {
-                let part = Part::bytes(file_data.clone()).file_name("{{{baseName}}}");
+                let part = Part::bytes(file_data.content.clone())
+                    .file_name(file_data.name.clone())
+                    .mime_str(&file_data.content_type)
+                    .map_err(serde_json::Error::custom)?;
                 multipart_form = multipart_form.part("{{{baseName}}}", part);
             }
             {{/isArray}}
             {{^isArray}}
-            let part = Part::bytes(param_value.clone()).file_name("{{{baseName}}}");
+            let part = Part::bytes(param_value.content.clone())
+                .file_name(param_value.name.clone())
+                .mime_str(&param_value.content_type)
+                .map_err(serde_json::Error::custom)?;
             multipart_form = multipart_form.part("{{{baseName}}}", part);
             {{/isArray}}
         },
@@ -436,12 +466,18 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
         if let Some(ref param_value) = {{{vendorExtensions.x-rust-param-identifier}}} {
         {{#isArray}}
         for file_data in param_value {
-            let part = Part::bytes(file_data.clone()).file_name("{{{baseName}}}");
+            let part = Part::bytes(file_data.content.clone())
+                .file_name(file_data.name.clone())
+                .mime_str(&file_data.content_type)
+                .map_err(serde_json::Error::custom)?;
             multipart_form = multipart_form.part("{{{baseName}}}", part);
         }
         {{/isArray}}
         {{^isArray}}
-        let part = Part::bytes(param_value.clone()).file_name("{{{baseName}}}");
+        let part = Part::bytes(param_value.content.clone())
+            .file_name(param_value.name.clone())
+            .mime_str(&param_value.content_type)
+            .map_err(serde_json::Error::custom)?;
         multipart_form = multipart_form.part("{{{baseName}}}", part);
         {{/isArray}}
     }
@@ -519,12 +555,14 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
     {{#isFile}}
     {{#required}}
     {{^isNullable}}
-    req_builder = req_builder.body({{{vendorExtensions.x-rust-param-identifier}}}{{#isArray}}.concat(){{/isArray}}.clone());
+    let body_bytes = {{{vendorExtensions.x-rust-param-identifier}}}{{#isArray}}.into_iter().flat_map(|f| f.content).collect::<Vec<u8>>(){{/isArray}}{{^isArray}}.content.clone(){{/isArray}};
+    req_builder = req_builder.body(body_bytes);
     {{/isNullable}}
     {{#isNullable}}
     match {{{vendorExtensions.x-rust-param-identifier}}} {
         Some(param_value) => {
-            req_builder = req_builder.body(param_value{{#isArray}}.concat(){{/isArray}}.clone());
+            let body_bytes = param_value{{#isArray}}.into_iter().flat_map(|f| f.content).collect::<Vec<u8>>(){{/isArray}}{{^isArray}}.content.clone(){{/isArray}};
+            req_builder = req_builder.body(body_bytes);
         },
         None => { unimplemented!("Required nullable body file param not supported"); },
     }
@@ -532,7 +570,8 @@ pub {{#supportAsync}}{{#hasBodyParam}}{{#bodyParams}}{{#isFile}}async {{/isFile}
     {{/required}}
     {{^required}}
     if let Some(param_value) = {{{vendorExtensions.x-rust-param-identifier}}} {
-        req_builder = req_builder.body(param_value{{#isArray}}.concat(){{/isArray}}.clone());
+        let body_bytes = param_value{{#isArray}}.into_iter().flat_map(|f| f.content).collect::<Vec<u8>>(){{/isArray}}{{^isArray}}.content.clone(){{/isArray}};
+        req_builder = req_builder.body(body_bytes);
     }
     {{/required}}
     {{/isFile}}
@@ -568,8 +607,8 @@ pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: 
 pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: &configuration::Configuration, {{#allParams}}{{{paramName}}}: {{!
 ### Option Start
 }}{{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{!
-### File types - use Vec<u8> for flexibility (can be created from BufReader, file, etc.)
-}}{{#isFile}}{{#isArray}}Vec<{{/isArray}}Vec<u8>{{#isArray}}>{{/isArray}}{{/isFile}}{{!
+### File types - include metadata for multipart uploads
+}}{{#isFile}}{{#isArray}}Vec<{{/isArray}}UploadFile{{#isArray}}>{{/isArray}}{{/isFile}}{{!
 ### &str and Vec<&str>
 }}{{^isFile}}{{#isString}}{{#isArray}}Vec<{{/isArray}}{{^isUuid}}&str{{/isUuid}}{{#isArray}}>{{/isArray}}{{/isString}}{{/isFile}}{{!
 ### UUIDs
