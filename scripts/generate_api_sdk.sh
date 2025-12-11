@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 openapi-generator-cli generate \
   -i ./api/agno-agentos-openapi.json \
   -g rust \
