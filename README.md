@@ -1,7 +1,7 @@
 # agno-agentos-client
 
 [![Build](https://github.com/nurokhq/agno-agentos-rust/actions/workflows/build.yml/badge.svg)](https://github.com/nurokhq/agno-agentos-rust/actions/workflows/build.yml)
-[![Rust](https://img.shields.io/badge/rust-1.70+-blue.svg)](https://www.rust-lang.org/)
+[![Rust](https://img.shields.io/badge/rust-1.85+-blue.svg)](https://www.rust-lang.org/)
 [![Code style: rustfmt](https://img.shields.io/badge/code%20style-rustfmt-000000.svg)](https://github.com/rust-lang/rustfmt)
 [![Linter: clippy](https://img.shields.io/badge/linter-clippy-blue.svg)](https://github.com/rust-lang/rust-clippy)
 
@@ -80,7 +80,7 @@ This script:
 
 ## Requirements
 
-- Rust 1.70 or later
+- Rust 1.85 or later
 - OpenAPI Generator CLI (for regeneration)
 
 ## License

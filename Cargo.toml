@@ -2,6 +2,14 @@
 name = "agno-agentos-client"
 version = "0.1.0"
 edition = "2024"
+description = "Rust Client for Agno AgentOS"
+license = "MIT"
+repository = "https://github.com/nurokhq/agno-agentos-rust"
+homepage = "https://github.com/nurokhq/agno-agentos-rust"
+documentation = "https://docs.agno.com/reference-api/overview"
+authors = ["Rui Zhang <zr@nurok.ai>", "Jian Fang <fj@nurok.ai>"] 
+keywords = ["api", "client", "agno", "agentos"]
+categories = ["api-bindings"]
 
 [features]
 default = ["rustls-tls"]
