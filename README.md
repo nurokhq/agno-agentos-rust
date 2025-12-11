@@ -1,6 +1,11 @@
-# agno-agentos-rust
+# agno-agentos-client
 
-Rust API SDK for [Agno AgentOS API](https://docs.agno.com/reference-api/overview)
+[![Build](https://github.com/nurokhq/agno-agentos-rust/actions/workflows/build.yml/badge.svg)](https://github.com/nurokhq/agno-agentos-rust/actions/workflows/build.yml)
+[![Rust](https://img.shields.io/badge/rust-1.70+-blue.svg)](https://www.rust-lang.org/)
+[![Code style: rustfmt](https://img.shields.io/badge/code%20style-rustfmt-000000.svg)](https://github.com/rust-lang/rustfmt)
+[![Linter: clippy](https://img.shields.io/badge/linter-clippy-blue.svg)](https://github.com/rust-lang/rust-clippy)
+
+Rust API Client SDK for [Agno AgentOS API](https://docs.agno.com/reference-api/overview)
 
 ## Overview
 
@@ -48,7 +53,7 @@ Please ensure you use a compatible client version for your AgnoOS API version to
 
 ```rust
 use agno_agentos_client::apis::*;
-use agno_agentos_rust::models::*;
+use agno_agentos_client::models::*;
 ...
 ```
 
