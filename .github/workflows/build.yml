@@ -19,6 +19,16 @@ jobs:
           toolchain: stable
           components: rustfmt, clippy, llvm-tools-preview
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install OpenAPI Generator CLI
+        run: |
+          npm install -g @openapitools/openapi-generator-cli
+          openapi-generator-cli version-manager set 7.16.0
+
       - name: Build
         env:
           RUSTFLAGS: "-D warnings"
