@@ -78,14 +78,7 @@ pub async fn get_metrics(
     db_id: Option<&str>,
 ) -> Result<models::MetricsResponse, Error<GetMetricsError>> {
     let req_builder = get_metrics_request_builder(configuration, starting_date, ending_date, db_id)
-        .map_err(|e| match e {
-            Error::Serde(e) => Error::Serde(e),
-            Error::Io(e) => Error::Io(e),
-            Error::Reqwest(e) => Error::Reqwest(e),
-            Error::ResponseError(_) => {
-                unreachable!("A request builder should not produce a ResponseError")
-            }
-        })?;
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -153,15 +146,8 @@ pub async fn refresh_metrics(
     configuration: &configuration::Configuration,
     db_id: Option<&str>,
 ) -> Result<Vec<models::DayAggregatedMetrics>, Error<RefreshMetricsError>> {
-    let req_builder =
-        refresh_metrics_request_builder(configuration, db_id).map_err(|e| match e {
-            Error::Serde(e) => Error::Serde(e),
-            Error::Io(e) => Error::Io(e),
-            Error::Reqwest(e) => Error::Reqwest(e),
-            Error::ResponseError(_) => {
-                unreachable!("A request builder should not produce a ResponseError")
-            }
-        })?;
+    let req_builder = refresh_metrics_request_builder(configuration, db_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 

@@ -105,14 +105,7 @@ pub async fn cancel_workflow_run(
     run_id: &str,
 ) -> Result<serde_json::Value, Error<CancelWorkflowRunError>> {
     let req_builder = cancel_workflow_run_request_builder(configuration, workflow_id, run_id)
-        .map_err(|e| match e {
-            Error::Serde(e) => Error::Serde(e),
-            Error::Io(e) => Error::Io(e),
-            Error::Reqwest(e) => Error::Reqwest(e),
-            Error::ResponseError(_) => {
-                unreachable!("A request builder should not produce a ResponseError")
-            }
-        })?;
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -213,14 +206,7 @@ pub async fn create_workflow_run(
         session_id,
         user_id,
     )
-    .map_err(|e| match e {
-        Error::Serde(e) => Error::Serde(e),
-        Error::Io(e) => Error::Io(e),
-        Error::Reqwest(e) => Error::Reqwest(e),
-        Error::ResponseError(_) => {
-            unreachable!("A request builder should not produce a ResponseError")
-        }
-    })?;
+    .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -287,15 +273,8 @@ pub async fn get_workflow(
     configuration: &configuration::Configuration,
     workflow_id: &str,
 ) -> Result<models::WorkflowResponse, Error<GetWorkflowError>> {
-    let req_builder =
-        get_workflow_request_builder(configuration, workflow_id).map_err(|e| match e {
-            Error::Serde(e) => Error::Serde(e),
-            Error::Io(e) => Error::Io(e),
-            Error::Reqwest(e) => Error::Reqwest(e),
-            Error::ResponseError(_) => {
-                unreachable!("A request builder should not produce a ResponseError")
-            }
-        })?;
+    let req_builder = get_workflow_request_builder(configuration, workflow_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -353,14 +332,8 @@ pub fn get_workflows_request_builder(
 pub async fn get_workflows(
     configuration: &configuration::Configuration,
 ) -> Result<Vec<models::WorkflowSummaryResponse>, Error<GetWorkflowsError>> {
-    let req_builder = get_workflows_request_builder(configuration).map_err(|e| match e {
-        Error::Serde(e) => Error::Serde(e),
-        Error::Io(e) => Error::Io(e),
-        Error::Reqwest(e) => Error::Reqwest(e),
-        Error::ResponseError(_) => {
-            unreachable!("A request builder should not produce a ResponseError")
-        }
-    })?;
+    let req_builder =
+        get_workflows_request_builder(configuration).map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -430,14 +403,7 @@ pub async fn run_parse_workflow_workflows_parse_post(
         configuration,
         parse_workflow_request,
     )
-    .map_err(|e| match e {
-        Error::Serde(e) => Error::Serde(e),
-        Error::Io(e) => Error::Io(e),
-        Error::Reqwest(e) => Error::Reqwest(e),
-        Error::ResponseError(_) => {
-            unreachable!("A request builder should not produce a ResponseError")
-        }
-    })?;
+    .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 

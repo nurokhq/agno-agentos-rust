@@ -108,16 +108,8 @@ pub async fn delete_eval_runs(
     db_id: Option<&str>,
 ) -> Result<(), Error<DeleteEvalRunsError>> {
     let req_builder =
-        delete_eval_runs_request_builder(configuration, delete_eval_runs_request, db_id).map_err(
-            |e| match e {
-                Error::Serde(e) => Error::Serde(e),
-                Error::Io(e) => Error::Io(e),
-                Error::Reqwest(e) => Error::Reqwest(e),
-                Error::ResponseError(_) => {
-                    unreachable!("A request builder should not produce a ResponseError")
-                }
-            },
-        )?;
+        delete_eval_runs_request_builder(configuration, delete_eval_runs_request, db_id)
+            .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -171,15 +163,8 @@ pub async fn get_eval_run(
     eval_run_id: &str,
     db_id: Option<&str>,
 ) -> Result<models::EvalSchema, Error<GetEvalRunError>> {
-    let req_builder =
-        get_eval_run_request_builder(configuration, eval_run_id, db_id).map_err(|e| match e {
-            Error::Serde(e) => Error::Serde(e),
-            Error::Io(e) => Error::Io(e),
-            Error::Reqwest(e) => Error::Reqwest(e),
-            Error::ResponseError(_) => {
-                unreachable!("A request builder should not produce a ResponseError")
-            }
-        })?;
+    let req_builder = get_eval_run_request_builder(configuration, eval_run_id, db_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -319,14 +304,7 @@ pub async fn get_eval_runs(
         db_id,
         eval_types,
     )
-    .map_err(|e| match e {
-        Error::Serde(e) => Error::Serde(e),
-        Error::Io(e) => Error::Io(e),
-        Error::Reqwest(e) => Error::Reqwest(e),
-        Error::ResponseError(_) => {
-            unreachable!("A request builder should not produce a ResponseError")
-        }
-    })?;
+    .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -398,15 +376,8 @@ pub async fn run_eval(
     eval_run_input: models::EvalRunInput,
     db_id: Option<&str>,
 ) -> Result<models::EvalSchema, Error<RunEvalError>> {
-    let req_builder =
-        run_eval_request_builder(configuration, eval_run_input, db_id).map_err(|e| match e {
-            Error::Serde(e) => Error::Serde(e),
-            Error::Io(e) => Error::Io(e),
-            Error::Reqwest(e) => Error::Reqwest(e),
-            Error::ResponseError(_) => {
-                unreachable!("A request builder should not produce a ResponseError")
-            }
-        })?;
+    let req_builder = run_eval_request_builder(configuration, eval_run_input, db_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -487,14 +458,7 @@ pub async fn update_eval_run(
 ) -> Result<models::EvalSchema, Error<UpdateEvalRunError>> {
     let req_builder =
         update_eval_run_request_builder(configuration, eval_run_id, update_eval_run_request, db_id)
-            .map_err(|e| match e {
-                Error::Serde(e) => Error::Serde(e),
-                Error::Io(e) => Error::Io(e),
-                Error::Reqwest(e) => Error::Reqwest(e),
-                Error::ResponseError(_) => {
-                    unreachable!("A request builder should not produce a ResponseError")
-                }
-            })?;
+            .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 

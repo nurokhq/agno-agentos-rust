@@ -151,15 +151,8 @@ pub async fn delete_all_content(
     configuration: &configuration::Configuration,
     db_id: Option<&str>,
 ) -> Result<serde_json::Value, Error<DeleteAllContentError>> {
-    let req_builder =
-        delete_all_content_request_builder(configuration, db_id).map_err(|e| match e {
-            Error::Serde(e) => Error::Serde(e),
-            Error::Io(e) => Error::Io(e),
-            Error::Reqwest(e) => Error::Reqwest(e),
-            Error::ResponseError(_) => {
-                unreachable!("A request builder should not produce a ResponseError")
-            }
-        })?;
+    let req_builder = delete_all_content_request_builder(configuration, db_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -235,14 +228,7 @@ pub async fn delete_content_by_id(
     db_id: Option<&str>,
 ) -> Result<models::ContentResponseSchema, Error<DeleteContentByIdError>> {
     let req_builder = delete_content_by_id_request_builder(configuration, content_id, db_id)
-        .map_err(|e| match e {
-            Error::Serde(e) => Error::Serde(e),
-            Error::Io(e) => Error::Io(e),
-            Error::Reqwest(e) => Error::Reqwest(e),
-            Error::ResponseError(_) => {
-                unreachable!("A request builder should not produce a ResponseError")
-            }
-        })?;
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -334,14 +320,7 @@ pub async fn get_content(
 ) -> Result<models::PaginatedResponseContentResponseSchema, Error<GetContentError>> {
     let req_builder =
         get_content_request_builder(configuration, limit, page, sort_by, sort_order, db_id)
-            .map_err(|e| match e {
-                Error::Serde(e) => Error::Serde(e),
-                Error::Io(e) => Error::Io(e),
-                Error::Reqwest(e) => Error::Reqwest(e),
-                Error::ResponseError(_) => {
-                    unreachable!("A request builder should not produce a ResponseError")
-                }
-            })?;
+            .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -414,16 +393,8 @@ pub async fn get_content_by_id(
     content_id: &str,
     db_id: Option<&str>,
 ) -> Result<models::ContentResponseSchema, Error<GetContentByIdError>> {
-    let req_builder = get_content_by_id_request_builder(configuration, content_id, db_id).map_err(
-        |e| match e {
-            Error::Serde(e) => Error::Serde(e),
-            Error::Io(e) => Error::Io(e),
-            Error::Reqwest(e) => Error::Reqwest(e),
-            Error::ResponseError(_) => {
-                unreachable!("A request builder should not produce a ResponseError")
-            }
-        },
-    )?;
+    let req_builder = get_content_by_id_request_builder(configuration, content_id, db_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -497,14 +468,7 @@ pub async fn get_content_status(
     db_id: Option<&str>,
 ) -> Result<models::ContentStatusResponse, Error<GetContentStatusError>> {
     let req_builder = get_content_status_request_builder(configuration, content_id, db_id)
-        .map_err(|e| match e {
-            Error::Serde(e) => Error::Serde(e),
-            Error::Io(e) => Error::Io(e),
-            Error::Reqwest(e) => Error::Reqwest(e),
-            Error::ResponseError(_) => {
-                unreachable!("A request builder should not produce a ResponseError")
-            }
-        })?;
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -570,15 +534,8 @@ pub async fn get_knowledge_config(
     configuration: &configuration::Configuration,
     db_id: Option<&str>,
 ) -> Result<models::ConfigResponseSchema, Error<GetKnowledgeConfigError>> {
-    let req_builder =
-        get_knowledge_config_request_builder(configuration, db_id).map_err(|e| match e {
-            Error::Serde(e) => Error::Serde(e),
-            Error::Io(e) => Error::Io(e),
-            Error::Reqwest(e) => Error::Reqwest(e),
-            Error::ResponseError(_) => {
-                unreachable!("A request builder should not produce a ResponseError")
-            }
-        })?;
+    let req_builder = get_knowledge_config_request_builder(configuration, db_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -645,14 +602,7 @@ pub async fn search_knowledge(
     vector_search_request_schema: models::VectorSearchRequestSchema,
 ) -> Result<models::PaginatedResponseVectorSearchResult, Error<SearchKnowledgeError>> {
     let req_builder = search_knowledge_request_builder(configuration, vector_search_request_schema)
-        .map_err(|e| match e {
-            Error::Serde(e) => Error::Serde(e),
-            Error::Io(e) => Error::Io(e),
-            Error::Reqwest(e) => Error::Reqwest(e),
-            Error::ResponseError(_) => {
-                unreachable!("A request builder should not produce a ResponseError")
-            }
-        })?;
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -762,14 +712,7 @@ pub async fn update_content(
         metadata,
         reader_id,
     )
-    .map_err(|e| match e {
-        Error::Serde(e) => Error::Serde(e),
-        Error::Io(e) => Error::Io(e),
-        Error::Reqwest(e) => Error::Reqwest(e),
-        Error::ResponseError(_) => {
-            unreachable!("A request builder should not produce a ResponseError")
-        }
-    })?;
+    .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -897,14 +840,7 @@ pub async fn upload_content(
         reader_id,
         chunker,
     )
-    .map_err(|e| match e {
-        Error::Serde(e) => Error::Serde(e),
-        Error::Io(e) => Error::Io(e),
-        Error::Reqwest(e) => Error::Reqwest(e),
-        Error::ResponseError(_) => {
-            unreachable!("A request builder should not produce a ResponseError")
-        }
-    })?;
+    .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 

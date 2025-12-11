@@ -37,14 +37,8 @@ pub fn get_api_info_request_builder(
 pub async fn get_api_info(
     configuration: &configuration::Configuration,
 ) -> Result<serde_json::Value, Error<GetApiInfoError>> {
-    let req_builder = get_api_info_request_builder(configuration).map_err(|e| match e {
-        Error::Serde(e) => Error::Serde(e),
-        Error::Io(e) => Error::Io(e),
-        Error::Reqwest(e) => Error::Reqwest(e),
-        Error::ResponseError(_) => {
-            unreachable!("A request builder should not produce a ResponseError")
-        }
-    })?;
+    let req_builder =
+        get_api_info_request_builder(configuration).map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 

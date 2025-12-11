@@ -108,15 +108,8 @@ pub async fn cancel_agent_run(
     agent_id: &str,
     run_id: &str,
 ) -> Result<serde_json::Value, Error<CancelAgentRunError>> {
-    let req_builder =
-        cancel_agent_run_request_builder(configuration, agent_id, run_id).map_err(|e| match e {
-            Error::Serde(e) => Error::Serde(e),
-            Error::Io(e) => Error::Io(e),
-            Error::Reqwest(e) => Error::Reqwest(e),
-            Error::ResponseError(_) => {
-                unreachable!("A request builder should not produce a ResponseError")
-            }
-        })?;
+    let req_builder = cancel_agent_run_request_builder(configuration, agent_id, run_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -222,14 +215,7 @@ pub async fn continue_agent_run(
         user_id,
         stream,
     )
-    .map_err(|e| match e {
-        Error::Serde(e) => Error::Serde(e),
-        Error::Io(e) => Error::Io(e),
-        Error::Reqwest(e) => Error::Reqwest(e),
-        Error::ResponseError(_) => {
-            unreachable!("A request builder should not produce a ResponseError")
-        }
-    })?;
+    .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -335,14 +321,7 @@ pub async fn create_agent_run(
         user_id,
         files,
     )
-    .map_err(|e| match e {
-        Error::Serde(e) => Error::Serde(e),
-        Error::Io(e) => Error::Io(e),
-        Error::Reqwest(e) => Error::Reqwest(e),
-        Error::ResponseError(_) => {
-            unreachable!("A request builder should not produce a ResponseError")
-        }
-    })?;
+    .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -409,14 +388,8 @@ pub async fn get_agent(
     configuration: &configuration::Configuration,
     agent_id: &str,
 ) -> Result<models::AgentResponse, Error<GetAgentError>> {
-    let req_builder = get_agent_request_builder(configuration, agent_id).map_err(|e| match e {
-        Error::Serde(e) => Error::Serde(e),
-        Error::Io(e) => Error::Io(e),
-        Error::Reqwest(e) => Error::Reqwest(e),
-        Error::ResponseError(_) => {
-            unreachable!("A request builder should not produce a ResponseError")
-        }
-    })?;
+    let req_builder = get_agent_request_builder(configuration, agent_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -474,14 +447,8 @@ pub fn get_agents_request_builder(
 pub async fn get_agents(
     configuration: &configuration::Configuration,
 ) -> Result<Vec<models::AgentResponse>, Error<GetAgentsError>> {
-    let req_builder = get_agents_request_builder(configuration).map_err(|e| match e {
-        Error::Serde(e) => Error::Serde(e),
-        Error::Io(e) => Error::Io(e),
-        Error::Reqwest(e) => Error::Reqwest(e),
-        Error::ResponseError(_) => {
-            unreachable!("A request builder should not produce a ResponseError")
-        }
-    })?;
+    let req_builder =
+        get_agents_request_builder(configuration).map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 

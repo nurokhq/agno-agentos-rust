@@ -96,15 +96,8 @@ pub async fn cancel_team_run(
     team_id: &str,
     run_id: &str,
 ) -> Result<serde_json::Value, Error<CancelTeamRunError>> {
-    let req_builder =
-        cancel_team_run_request_builder(configuration, team_id, run_id).map_err(|e| match e {
-            Error::Serde(e) => Error::Serde(e),
-            Error::Io(e) => Error::Io(e),
-            Error::Reqwest(e) => Error::Reqwest(e),
-            Error::ResponseError(_) => {
-                unreachable!("A request builder should not produce a ResponseError")
-            }
-        })?;
+    let req_builder = cancel_team_run_request_builder(configuration, team_id, run_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -217,14 +210,7 @@ pub async fn create_team_run(
         user_id,
         files,
     )
-    .map_err(|e| match e {
-        Error::Serde(e) => Error::Serde(e),
-        Error::Io(e) => Error::Io(e),
-        Error::Reqwest(e) => Error::Reqwest(e),
-        Error::ResponseError(_) => {
-            unreachable!("A request builder should not produce a ResponseError")
-        }
-    })?;
+    .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -291,14 +277,8 @@ pub async fn get_team(
     configuration: &configuration::Configuration,
     team_id: &str,
 ) -> Result<models::TeamResponse, Error<GetTeamError>> {
-    let req_builder = get_team_request_builder(configuration, team_id).map_err(|e| match e {
-        Error::Serde(e) => Error::Serde(e),
-        Error::Io(e) => Error::Io(e),
-        Error::Reqwest(e) => Error::Reqwest(e),
-        Error::ResponseError(_) => {
-            unreachable!("A request builder should not produce a ResponseError")
-        }
-    })?;
+    let req_builder = get_team_request_builder(configuration, team_id)
+        .map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
@@ -356,14 +336,8 @@ pub fn get_teams_request_builder(
 pub async fn get_teams(
     configuration: &configuration::Configuration,
 ) -> Result<Vec<models::TeamResponse>, Error<GetTeamsError>> {
-    let req_builder = get_teams_request_builder(configuration).map_err(|e| match e {
-        Error::Serde(e) => Error::Serde(e),
-        Error::Io(e) => Error::Io(e),
-        Error::Reqwest(e) => Error::Reqwest(e),
-        Error::ResponseError(_) => {
-            unreachable!("A request builder should not produce a ResponseError")
-        }
-    })?;
+    let req_builder =
+        get_teams_request_builder(configuration).map_err(super::map_request_builder_error)?;
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;
 
