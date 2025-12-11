@@ -2,6 +2,8 @@
  * Tests for API functions
  */
 
+use agno_agentos_client::apis::UploadFile;
+use agno_agentos_client::apis::agents_api::create_agent_run_request_builder;
 use agno_agentos_client::apis::configuration::Configuration;
 use agno_agentos_client::apis::health_api::health_check_request_builder;
 
@@ -56,4 +58,32 @@ async fn test_health_check_request_builder_with_default_config() {
         "http://localhost/health",
         "Default base path should be used"
     );
+}
+
+#[tokio::test]
+async fn test_request_with_file() {
+    // Create a test configuration
+    let config = Configuration {
+        base_path: "http://localhost:8444".to_string(),
+        user_agent: Some("test-agent/1.0".to_string()),
+        ..Default::default()
+    };
+
+    // Wrap each file's bytes in a Vec so it matches Option<Vec<Vec<u8>>>
+    let file_data = std::fs::read("tests/weather.txt").unwrap();
+    let files = vec![UploadFile {
+        name: "weather.txt".to_string(),
+        content_type: "text/plain".to_string(),
+        content: file_data,
+    }];
+    let _request_builder = create_agent_run_request_builder(
+        &config,
+        "nurok-parse-agent",
+        "What is the weather in Tokyo?",
+        Some(false),
+        Some("test-session-id"),
+        Some("test-user-id"),
+        Some(files),
+    )
+    .unwrap();
 }
