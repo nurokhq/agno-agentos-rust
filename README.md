@@ -29,14 +29,14 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-agno-agentos-client = { version = "0.1.0", features = ["rustls-tls"] }
+agno-agentos-client = { version = "0.1.1", features = ["rustls-tls"] }
 ```
 
 Or with native TLS:
 
 ```toml
 [dependencies]
-agno-agentos-client = { version = "0.1.0", features = ["native-tls"] }
+agno-agentos-client = { version = "0.1.1", features = ["native-tls"] }
 ```
 
 ## Version Compatibility
@@ -46,6 +46,8 @@ The following table shows the version correspondence between the client and Agno
 | Client Version | AgnoOS API Version |
 |----------------|-------------------|
 | 0.1.0          | 2.3.10             |
+| 0.1.1          | 2.3.10             |
+
 
 Please ensure you use a compatible client version for your AgnoOS API version to avoid compatibility issues.
 
