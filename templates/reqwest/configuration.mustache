@@ -12,22 +12,40 @@ use google_cloud_token::TokenSource;
 use async_trait::async_trait;
 {{/supportTokenSource}}
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, typed_builder::TypedBuilder)]
 pub struct Configuration {
+    #[serde(default = "default_base_path")]
+    #[builder(default_code = "default_base_path()")]
     pub base_path: String,
+    #[serde(default = "default_user_agent")]
+    #[builder(default_code = "default_user_agent()")]
     pub user_agent: Option<String>,
+    #[serde(skip_serializing, skip_deserializing)]
+    #[builder(default_code = "default_client()")]
     pub client: {{#supportMiddleware}}reqwest_middleware::ClientWithMiddleware{{/supportMiddleware}}{{^supportMiddleware}}reqwest{{^supportAsync}}::blocking{{/supportAsync}}::Client{{/supportMiddleware}},
     {{^supportTokenSource}}
+    #[serde(default)]
+    #[builder(default)]
     pub basic_auth: Option<BasicAuth>,
+    #[serde(default)]
+    #[builder(default)]
     pub oauth_access_token: Option<String>,
+    #[serde(default)]
+    #[builder(default)]
     pub bearer_access_token: Option<String>,
+    #[serde(default)]
+    #[builder(default)]
     pub api_key: Option<ApiKey>,
     {{/supportTokenSource}}
     {{#withAWSV4Signature}}
+    #[serde(default)]
+    #[builder(default)]
     pub aws_v4_key: Option<AWSv4Key>,
     {{/withAWSV4Signature}}
     {{#supportAsync}}
     {{#supportTokenSource}}
+    #[serde(skip_serializing, skip_deserializing)]
+    #[builder(default_code = "default_token_source()")]
     pub token_source: Arc<dyn TokenSource>,
     {{/supportTokenSource}}
     {{/supportAsync}}
@@ -36,19 +54,31 @@ pub struct Configuration {
 
 pub type BasicAuth = (String, Option<String>);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, typed_builder::TypedBuilder)]
 pub struct ApiKey {
+    #[serde(default)]
+    #[builder(default)]
     pub prefix: Option<String>,
+    #[serde(default)]
+    #[builder(default)]
     pub key: String,
 }
 {{/supportTokenSource}}
 
 {{#withAWSV4Signature}}
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, typed_builder::TypedBuilder)]
 pub struct AWSv4Key {
+    #[serde(default)]
+    #[builder(default)]
     pub access_key: String,
+    #[serde(default)]
+    #[builder(default)]
     pub secret_key: SecretString,
+    #[serde(default)]
+    #[builder(default)]
     pub region: String,
+    #[serde(default)]
+    #[builder(default)]
     pub service: String,
 }
 
@@ -82,31 +112,27 @@ impl AWSv4Key {
 }
 {{/withAWSV4Signature}}
 
+fn default_base_path() -> String {
+    "http://localhost:7777".to_owned()
+}
+
+fn default_user_agent() -> Option<String> {
+    {{#httpUserAgent}}Some("{{{.}}}".to_owned()){{/httpUserAgent}}{{^httpUserAgent}}Some("OpenAPI-Generator/{{{version}}}/rust".to_owned()){{/httpUserAgent}}
+}
+
+fn default_client() -> {{#supportMiddleware}}reqwest_middleware::ClientWithMiddleware{{/supportMiddleware}}{{^supportMiddleware}}reqwest{{^supportAsync}}::blocking{{/supportAsync}}::Client{{/supportMiddleware}} {
+    {{#supportMiddleware}}reqwest_middleware::ClientBuilder::new(reqwest{{^supportAsync}}::blocking{{/supportAsync}}::Client::new()).build(){{/supportMiddleware}}{{^supportMiddleware}}reqwest{{^supportAsync}}::blocking{{/supportAsync}}::Client::new(){{/supportMiddleware}}
+}
+
 impl Configuration {
     pub fn new() -> Configuration {
-        Configuration::default()
+        Configuration::builder().build()
     }
 }
 
 impl Default for Configuration {
     fn default() -> Self {
-        Configuration {
-            base_path: "{{{basePath}}}".to_owned(),
-            user_agent: {{#httpUserAgent}}Some("{{{.}}}".to_owned()){{/httpUserAgent}}{{^httpUserAgent}}Some("OpenAPI-Generator/{{{version}}}/rust".to_owned()){{/httpUserAgent}},
-            client: {{#supportMiddleware}}reqwest_middleware::ClientBuilder::new(reqwest{{^supportAsync}}::blocking{{/supportAsync}}::Client::new()).build(){{/supportMiddleware}}{{^supportMiddleware}}reqwest{{^supportAsync}}::blocking{{/supportAsync}}::Client::new(){{/supportMiddleware}},
-            {{^supportTokenSource}}
-            basic_auth: None,
-            oauth_access_token: None,
-            bearer_access_token: None,
-            api_key: None,
-            {{/supportTokenSource}}
-            {{#withAWSV4Signature}}
-            aws_v4_key: None,
-            {{/withAWSV4Signature}}
-            {{#supportTokenSource}}
-            token_source: Arc::new(NoopTokenSource{}),
-            {{/supportTokenSource}}
-        }
+        Configuration::builder().build()
     }
 }
 {{#supportTokenSource}}
@@ -118,5 +144,9 @@ impl TokenSource for NoopTokenSource {
     async fn token(&self) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
         panic!("This is dummy token source. You can use TokenSourceProvider from 'google_cloud_auth' crate, or any other compatible crate.")
     }
+}
+
+fn default_token_source() -> Arc<dyn TokenSource> {
+    Arc::new(NoopTokenSource{})
 }
 {{/supportTokenSource}}
