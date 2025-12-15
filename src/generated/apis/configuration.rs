@@ -40,13 +40,11 @@ pub struct ApiKey {
     #[serde(default)]
     #[builder(default)]
     pub prefix: Option<String>,
-    #[serde(default)]
-    #[builder(default)]
     pub key: String,
 }
 
 fn default_base_path() -> String {
-    "http://localhost:7777".to_owned()
+    "http://localhost".to_owned()
 }
 
 fn default_user_agent() -> Option<String> {

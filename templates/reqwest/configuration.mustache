@@ -59,8 +59,6 @@ pub struct ApiKey {
     #[serde(default)]
     #[builder(default)]
     pub prefix: Option<String>,
-    #[serde(default)]
-    #[builder(default)]
     pub key: String,
 }
 {{/supportTokenSource}}
@@ -68,17 +66,9 @@ pub struct ApiKey {
 {{#withAWSV4Signature}}
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, typed_builder::TypedBuilder)]
 pub struct AWSv4Key {
-    #[serde(default)]
-    #[builder(default)]
     pub access_key: String,
-    #[serde(default)]
-    #[builder(default)]
     pub secret_key: SecretString,
-    #[serde(default)]
-    #[builder(default)]
     pub region: String,
-    #[serde(default)]
-    #[builder(default)]
     pub service: String,
 }
 
@@ -113,7 +103,7 @@ impl AWSv4Key {
 {{/withAWSV4Signature}}
 
 fn default_base_path() -> String {
-    "http://localhost:7777".to_owned()
+    "{{{basePath}}}".to_owned()
 }
 
 fn default_user_agent() -> Option<String> {

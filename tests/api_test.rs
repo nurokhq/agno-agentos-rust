@@ -55,7 +55,7 @@ async fn test_health_check_request_builder_with_default_config() {
     let req = req_builder.build().unwrap();
     assert_eq!(
         req.url().to_string(),
-        "http://localhost:7777/health",
+        "http://localhost/health",
         "Default base path should be used"
     );
 }
